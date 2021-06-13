@@ -8,26 +8,30 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
+use Illuminate\Support\Facades\DB;
+
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, HasFactory;
+    
+    protected $connection = 'mysql';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'name', 'email',
-    ];
 
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
-    ];
+    public static function findAll(){
+        $results = User::all();
+
+        return $results;
+    }
+
+    public static function selectTest(){
+        $results = User::select(['user_id as userId', 'address', 'full_name as fullName'])
+        ->where('nis', '1111')
+        ->get();
+
+        return $results;
+    }
+
+
+   
 }
