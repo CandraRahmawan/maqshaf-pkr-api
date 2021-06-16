@@ -18,6 +18,7 @@ $router->get('/', function () use ($router) {
 });
 
 
+
 $router->get('user/all', 'UserController@findAll');
 $router->get('user/{id}', 'UserController@findById');
 $router->get('user/{id}/{pin}', 'UserController@findByIdAndPin');

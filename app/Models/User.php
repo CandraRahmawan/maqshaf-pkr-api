@@ -16,6 +16,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     use Authenticatable, Authorizable, HasFactory;
     
     protected $connection = 'mysql';
+
     
 
     public static function findAll(){
@@ -31,8 +32,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         ->where('user_id', $id)
         ->get();
 
+
         return $results;
     }
+
 
     public static function findByIdAndPin($id, $pin){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
@@ -89,7 +92,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
         return $results;
 
-    }
+
 
 
    
