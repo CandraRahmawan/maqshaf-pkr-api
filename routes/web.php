@@ -18,7 +18,6 @@ $router->get('/', function () use ($router) {
 });
 
 
-
 $router->get('user/all', 'UserController@findAll');
 $router->get('user/{id}', 'UserController@findById');
 $router->get('user/{id}/{pin}', 'UserController@findByIdAndPin');
@@ -40,3 +39,17 @@ $router->get('mastergood/all', 'MasterGoodController@findAll');
 $router->get('mastergood/{id}', 'MasterGoodController@findById');
 $router->post('mastergood/add', 'MasterGoodController@insert');
 $router->put('mastergood/update/{id}', 'MasterGoodController@updateData');
+$router->post('mastergood/upload/image/{id}', 'MasterGoodController@uploadImage');
+
+
+$router->get('deposit/all', 'DepositController@findAll');
+$router->get('deposit/{id}', 'DepositController@findById');
+$router->post('deposit/debet/{userId}', 'DepositController@debit');
+$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
+$router->post('transactions/buy/{userId}', 'DepositController@buyItem');
+
+
+$router->get('transactions/all', 'TransactionsController@findAll');
+$router->get('transactions/{id}', 'TransactionsController@findById');
+$router->post('transactions/add', 'TransactionsController@insert');
+$router->put('transactions/update/{id}', 'TransactionsController@updateData');
