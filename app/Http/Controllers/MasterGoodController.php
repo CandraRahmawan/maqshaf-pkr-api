@@ -116,7 +116,6 @@ class MasterGoodController extends Controller
          
         if( $request->file('image_file') ) {
 
-            // $sizeFIle = $request->file('image_file')->getSize();
             $path = $request->file('image_file')->getRealPath();
             $logo = file_get_contents($path);
             $base64 = base64_encode($logo);    
@@ -129,7 +128,6 @@ class MasterGoodController extends Controller
             $update = MasterGoods::updateData($id, $data);
 
             return $update;
-            // return $sizeFIle;
         } else {
             return "image error";
         }
