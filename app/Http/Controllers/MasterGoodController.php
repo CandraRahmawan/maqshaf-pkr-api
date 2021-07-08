@@ -92,26 +92,17 @@ class MasterGoodController extends Controller
     }
 
     public function uploadImage(Request $request, $id){
-
-         // Get the file from the request
-        // $file = $request->file('image');
-
-    // Get the contents of the file
-        // $contents = $file->openFile()->fread($file->getSize());
+         
         if( $request->file('image_file') ) {
-            // $imageConvert = $request->file('image_file')->getRealPath();
 
-            // Get the file from the request
-            $file = $request->file('image_file');
-
-    // Get the contents of the file
-            $contents = $file->openFile()->fread($file->getSize());
+            $path = $request->file('image_file')->getRealPath();
+            $logo = file_get_contents($path);
+            $base64 = base64_encode($logo);    
+            
 
             $data = array(
-                'image' => $contents
-            );
-
-            
+                'image' => $base64
+            );            
 
             $update = MasterGoods::updateData($id, $data);
 
@@ -119,10 +110,6 @@ class MasterGoodController extends Controller
         } else {
             return "image error";
         }
-
-        // $image = $request->file('image_file')->getRealPath();
-
-
 
     }
 }
