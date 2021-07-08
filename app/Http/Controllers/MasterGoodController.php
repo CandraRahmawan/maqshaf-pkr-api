@@ -113,16 +113,16 @@ class MasterGoodController extends Controller
     }
 
     public function uploadImage(Request $request, $id){
-         
-        if( $request->file('image_file') ) {
+    
+        if( $request->file('image_file') ) {            
+            // Get the file from the request
+            $file = $request->file('image_file');
 
-            $path = $request->file('image_file')->getRealPath();
-            $logo = file_get_contents($path);
-            $base64 = base64_encode($logo);    
-            
+            // Get the contents of the file
+            $contents = $file->openFile()->fread($file->getSize());
 
             $data = array(
-                'image' => $base64
+                'image' => $contents
             );            
 
             $update = MasterGoods::updateData($id, $data);
@@ -133,6 +133,7 @@ class MasterGoodController extends Controller
         }
 
     }
+
 
     public function getImage($id){
         $data = MasterGoods::findById($id)->first();
