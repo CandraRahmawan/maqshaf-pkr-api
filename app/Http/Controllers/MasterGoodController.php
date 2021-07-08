@@ -116,20 +116,20 @@ class MasterGoodController extends Controller
          
         if( $request->file('image_file') ) {
 
-            $sizeFIle = $request->file('image_file')->getSize();
-            // $path = $request->file('image_file')->getRealPath();
-            // $logo = file_get_contents($path);
-            // $base64 = base64_encode($logo);    
+            // $sizeFIle = $request->file('image_file')->getSize();
+            $path = $request->file('image_file')->getRealPath();
+            $logo = file_get_contents($path);
+            $base64 = base64_encode($logo);    
             
 
-            // $data = array(
-            //     'image' => $base64
-            // );            
+            $data = array(
+                'image' => $base64
+            );            
 
-            // $update = MasterGoods::updateData($id, $data);
+            $update = MasterGoods::updateData($id, $data);
 
-            // return $update;
-            return $sizeFIle;
+            return $update;
+            // return $sizeFIle;
         } else {
             return "image error";
         }
