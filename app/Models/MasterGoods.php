@@ -21,14 +21,14 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
 
     public static function getAll(){
 
-        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'nama', 'image', 'description', 'price', 'is_active as isActive', 'code', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
         ->get();
 
         return $result;
     }
 
     public static function findById($id){
-        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'nama', 'image', 'description', 'price', 'is_active as isActive', 'code', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
         ->where('master_goods_id', $id)
         ->get();
 
