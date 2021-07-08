@@ -37,9 +37,11 @@ $router->delete('administrator/delete/{id}', 'AdministratorController@deleteData
 
 $router->get('mastergood/all', 'MasterGoodController@findAll');
 $router->get('mastergood/{id}', 'MasterGoodController@findById');
+$router->get('mastergood/image/{id}', 'MasterGoodController@getImage');
 $router->post('mastergood/add', 'MasterGoodController@insert');
 $router->put('mastergood/update/{id}', 'MasterGoodController@updateData');
 $router->post('mastergood/upload/image/{id}', 'MasterGoodController@uploadImage');
+
 
 
 $router->get('deposit/all', 'DepositController@findAll');
@@ -53,3 +55,6 @@ $router->get('transactions/all', 'TransactionsController@findAll');
 $router->get('transactions/{id}', 'TransactionsController@findById');
 $router->post('transactions/add', 'TransactionsController@insert');
 $router->put('transactions/update/{id}', 'TransactionsController@updateData');
+
+
+
