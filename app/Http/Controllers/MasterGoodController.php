@@ -31,7 +31,7 @@ class MasterGoodController extends Controller
                 [
                     'masterGoodsId' => $value->masterGoodsId, 
                     'name' => $value->name,
-                    'image' => mb_convert_encoding($value->image, 'UTF-8', 'UTF-8'),
+                    'image' => env('APP_URL').'/mastergood/image/'.$value->masterGoodsId,
                     'description' =>  $value->description,
                     'price' => $value->price,
                     'isActive' => $value->isActive,
@@ -116,21 +116,28 @@ class MasterGoodController extends Controller
          
         if( $request->file('image_file') ) {
 
-            $path = $request->file('image_file')->getRealPath();
-            $logo = file_get_contents($path);
-            $base64 = base64_encode($logo);    
+            $sizeFIle = $request->file('image_file')->getSize();
+            // $path = $request->file('image_file')->getRealPath();
+            // $logo = file_get_contents($path);
+            // $base64 = base64_encode($logo);    
             
 
-            $data = array(
-                'image' => $base64
-            );            
+            // $data = array(
+            //     'image' => $base64
+            // );            
 
-            $update = MasterGoods::updateData($id, $data);
+            // $update = MasterGoods::updateData($id, $data);
 
-            return $update;
+            // return $update;
+            return $sizeFIle;
         } else {
             return "image error";
         }
 
+    }
+
+    public function getImage($id){
+        $data = MasterGoods::findById($id)->first();
+        return $data->image;
     }
 }
