@@ -39,6 +39,6 @@ class Authenticate
             return response('Unauthorized.', 401);
         }
 
-        return $next($request);
+        return $next($request)->header('Access-Control-Allow-Origin', 'maqshaf-web-dev.pesantrenkhoirurrooziqiin.com,maqshaf-web.pesantrenkhoirurrooziqiin.com');
     }
 }
