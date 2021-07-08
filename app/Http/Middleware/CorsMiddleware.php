@@ -15,6 +15,14 @@ class CorsMiddleware
      */
     public function handle($request, Closure $next)
     {
-        return $next($request)->header('Access-Control-Allow-Origin', 'localhost:3500,maqshaf-web-dev.pesantrenkhoirurrooziqiin.com,maqshaf-web.pesantrenkhoirurrooziqiin.com');
+        $headers = [
+            'Access-Control-Allow-Origin'      => '*'
+        ];
+        $response = $next($request);
+        foreach($headers as $key => $value)
+        {
+            $response->header($key, $value);
+        }
+        return $response;
     }
 }
