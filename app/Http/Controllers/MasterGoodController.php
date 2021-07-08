@@ -22,8 +22,29 @@ class MasterGoodController extends Controller
     public function findAll(){        
 
         $data = MasterGoods::getAll();
-        $ress = Response::response(200, $data);
         
+
+        $buildData = [];
+
+        foreach ($data as $value) {
+            array_push($buildData, 
+                [
+                    'masterGoodsId' => $value->masterGoodsId, 
+                    'name' => $value->name,
+                    'image' => mb_convert_encoding($value->image, 'UTF-8', 'UTF-8'),
+                    'description' =>  $value->description,
+                    'price' => $value->price,
+                    'isActive' => $value->isActive,
+                    'code' => $value->code,
+                    'createdAt' => $value->createdAt,
+                    'createdBy' => $value->createdBy,
+                    'updatedAt' => $value->updatedAt,
+                    'updatedBy' => $value->updatedBy
+                ]
+            );
+        }
+        
+        $ress = Response::response(200, $buildData);
         return $ress;
     }
 
