@@ -14,31 +14,31 @@ use Illuminate\Support\Facades\DB;
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, HasFactory;
-    
+
     protected $connection = 'mysql';
     public $timestamps = false;
 
     public static function findAll(){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
-        // ->where('nis', '1111')
-        ->get();
+            // ->where('nis', '1111')
+            ->get();
 
         return $results;
     }
 
     public static function findById($id){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
-        ->where('user_id', $id)
-        ->get();
+            ->where('user_id', $id)
+            ->get();
 
         return $results;
     }
 
     public static function findByIdAndPin($id, $pin){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
-        ->where('user_id', $id)
-        ->where('pin', $pin)
-        ->get();
+            ->where('user_id', $id)
+            ->where('pin', $pin)
+            ->get();
 
         return $results;
 
@@ -62,35 +62,35 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     public static function updateData($id, $data){
-        $user = User::where('user_id', $id)        
-        ->update($data);        
+        $user = User::where('user_id', $id)
+            ->update($data);
 
         return $user;
 
     }
 
     public static function updatePin($id, $pinOld, $data){
-        DB::beginTransaction();        
+        DB::beginTransaction();
         $results = false;
 
-        try 
-        { 
-            $results = User::where('user_id', $id) 
-            ->where('pin', $pinOld)       
-            ->update($data); 
+        try
+        {
+            $results = User::where('user_id', $id)
+                ->where('pin', $pinOld)
+                ->update($data);
             DB::commit();
-            
+
         }
-        catch (Exception $e) 
-        {            
+        catch (Exception $e)
+        {
             DB::rollback();
 
-        }        
+        }
 
         return $results;
 
     }
 
 
-   
+
 }
