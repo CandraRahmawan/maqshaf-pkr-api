@@ -37,6 +37,15 @@ class TransactionItem extends Model implements AuthenticatableContract, Authoriz
 
     }
 
+    public static function findByTransactionId($id){
+        $result = TransactionItem::select('transaction_items_id as transactionItemsId', 'transaction_id as transactionId', 'price', 'name', 'qty')
+        ->where('transaction_id', $id)
+        ->get();
+
+        return $result;
+
+    }
+
     public static function insert($data){
 
         DB::beginTransaction();
