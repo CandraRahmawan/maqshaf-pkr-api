@@ -37,9 +37,10 @@ $router->delete('administrator/delete/{id}', 'AdministratorController@deleteData
 
 $router->get('mastergood/all', 'MasterGoodController@findAll');
 $router->get('mastergood/{id}', 'MasterGoodController@findById');
+$router->get('mastergood/searchname/{name}', 'MasterGoodController@findByName');
 $router->get('mastergood/image/{id}', 'MasterGoodController@getImage');
 $router->post('mastergood/add', 'MasterGoodController@insert');
-$router->put('mastergood/update/{id}', 'MasterGoodController@updateData');
+$router->post('mastergood/update/{id}', 'MasterGoodController@updateData');
 $router->post('mastergood/upload/image/{id}', 'MasterGoodController@uploadImage');
 
 
