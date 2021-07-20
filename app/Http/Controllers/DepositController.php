@@ -5,6 +5,7 @@ use App\Models\Deposit;
 use App\Models\DepositTransaction;
 use App\Models\TransactionItem;
 use App\Models\Transactions;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -143,20 +144,31 @@ class DepositController extends Controller
 
             );
 
-            if(!empty($dataDeposit) && $saldoFirts >= $totalBayar)
-            {
-            
+            $pinSha = sha1($request->input('pin'));
+            $dataUser = User::findByIdAndPin($userId, $pinSha);
 
-                $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+            if(!empty($dataUser)){
+                if(!empty($dataDeposit) && $saldoFirts >= $totalBayar)
+                {
 
-                $code = $debit ? 200 : 400;
-                $ress = Response::response($code);
 
-                return $ress;
+                    $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+
+                    $code = $debit ? 200 : 400;
+                    $ress = Response::response($code);
+
+                    return $ress;
+
+                }else{
+                    $ress = Response::response(400);
+                    return $ress;
+                }
+
             }else{
-                $ress = Response::response(400);
-                return $ress;
+                 $ress = Response::responseWithMessage(400,"pin salah");
+                    return $ress;
             }
+            
             
         } catch (Exception $e) {
             return $e;
@@ -167,6 +179,7 @@ class DepositController extends Controller
     public function kredit(Request $request, $userId){
 
         $code = 400;
+        $ressMessage = "";
 
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');        
@@ -199,8 +212,9 @@ class DepositController extends Controller
                 
 
                 $code = $kredit ? 200 : 400;
-                // $ress = Response::response($code);
-                $ress = Response::responseWithMessage($code, "first");
+                $ressMessage = $code == 200 ? "kredit: ". $totalBayar .", saldo: ". $totalBayar : "failed";
+                
+                $ress = Response::responseWithMessage($code, $ressMessage);
                 
 
                 return $ress;
@@ -231,8 +245,9 @@ class DepositController extends Controller
                 $kredit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
 
                 $code = $kredit ? 200 : 400;
-                // $ress = Response::response($code);
-                $ress = Response::responseWithMessage($code, "sudah punya");
+                
+                $ressMessage = $code == 200 ? "kredit: ". $totalBayar .", saldo: ". $finalSaldo : "failed";
+                $ress = Response::responseWithMessage($code, $ressMessage);
                 return $ress;
             }
             
@@ -247,17 +262,6 @@ class DepositController extends Controller
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s'); 
 
-        // $dataTransaction = array(
-        //     "transaction_code" => $this->generateTransactionCode(),
-        //     "transaction_date" => $now,
-        //     "total" => $request->input('total'),
-        //     "qty" => $request->input('qty'),
-        //     "user_id" => $userId,
-        //     "price" => $request->input('price'),
-        //     "name" => $request->input('name')
-
-
-        // );
         $dataTransaction = array(
             "transaction_code" => $this->generateTransactionCode(),
             "transaction_date" => $now,
@@ -271,8 +275,41 @@ class DepositController extends Controller
 
         $result = Transactions::buyItem($dataTransaction);
 
-        // return $dataTransaction['items'];
-        return $result;
+        $dataTransactionItem = TransactionItem::findByTransactionId($result->id);
+
+        $buildData = [];
+
+        foreach ($dataTransactionItem as $value) {
+            array_push($buildData, 
+                [
+                    "transaction_items_id" => $value->transaction_items_id,
+                    "transactionId" => $value->transaction_id,
+                    "price" => $value->price,
+                    "name" => $value->name,
+                    "qty" => $value->qty
+
+                ]
+            );
+        }
+
+        $buildDataResult = [];
+
+        array_push($buildDataResult, 
+                [
+                    'transactionCode' => $result->transaction_code, 
+                    'transactionDate' => $result->transaction_date,
+                    'total' => (int) $result->total,
+                    'qty' =>  (int) $result->qty,
+                    'userId' => (int) $result->user_id,
+                    'transactionId' => (int) $result->transactionId,
+                    'items' => $buildData
+                    
+                ]
+            );
+
+        
+        // return $result;
+        return Response::response(200, $buildDataResult);
         
     }
 

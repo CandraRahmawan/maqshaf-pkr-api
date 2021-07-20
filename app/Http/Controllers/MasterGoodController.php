@@ -33,9 +33,11 @@ class MasterGoodController extends Controller
                     'name' => $value->name,
                     'image' => env('APP_URL').'/mastergood/image/'.$value->masterGoodsId,
                     'description' =>  $value->description,
-                    'price' => $value->price,
+                    'price' => (int)$value->price,
                     'isActive' => $value->isActive,
                     'code' => $value->code,
+                    'currency' => $value->currency, 
+                    'category' => $value->category,
                     'createdAt' => $value->createdAt,
                     'createdBy' => $value->createdBy,
                     'updatedAt' => $value->updatedAt,
@@ -49,28 +51,64 @@ class MasterGoodController extends Controller
     }
 
     public function findById($id){        
-        $data = MasterGoods::findById($id);
-        $ress = Response::response(200, $data);
+        $data = MasterGoods::findById($id)->first();
+
+        $buildData = [];
+
+        if(!empty($data)){
+
+            array_push($buildData, 
+                [
+                    'masterGoodsId' => $data->masterGoodsId, 
+                    'name' => $data->name,
+                    'image' => env('APP_URL').'/mastergood/image/'.$data->masterGoodsId,
+                    'description' =>  $data->description,
+                    'price' => (int)$data->price,
+                    'isActive' => $data->isActive,
+                    'code' => $data->code,
+                    'currency' => $data->currency, 
+                    'category' => $data->category,
+                    'createdAt' => $data->createdAt,
+                    'createdBy' => $data->createdBy,
+                    'updatedAt' => $data->updatedAt,
+                    'updatedBy' => $data->updatedBy
+                ]
+            );
+        }
+
+        $ress = Response::response(200, $buildData);
 
         return $ress;
-    }    
+    }
 
     public function insert(Request $request){
 
+        if( $request->file('image_file') ) {
+            // Get the file from the request            
+
+            $path = $request->file('image_file')->getRealPath();
+            $logo = file_get_contents($path);
+            $base64 = base64_encode($logo);
+
+            $data = array(            
+                'name'  => $request->input('name'),            
+                'description'  => $request->input('description'),
+                'price'  => $request->input('price'),
+                'is_active'  => 1,
+                'code'  => $request->input('code'),            
+                'created_by' => $request->input('createdBy'),
+                'image' => $base64
+            );
+
+            $save = MasterGoods::insert($data);
+
+            $ress = Response::response(200, $save);
 
 
-        $data = array(            
-            'name'  => $request->input('name'),            
-            'description'  => $request->input('description'),
-            'price'  => $request->input('price'),
-            'is_active'  => 1,
-            'code'  => $request->input('code'),            
-            'created_by' => $request->input('createdBy')            
-        );
-
-        $save = MasterGoods::insert($data);
+        }else {            
+            $ress = Response::responseWithMessage(400, "image error");
+        }
         
-        $ress = Response::response(200, $save);
 
         return $ress;
 
@@ -80,16 +118,34 @@ class MasterGoodController extends Controller
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
 
-        $data = array(
-            'full_name'  => $request->input('fullName'),            
-            'username'  => $request->input('username'),         
-            'updated_by' => $request->input('updatedBy'),
-            'updated_at' => $now
-        );
+        if($request->file('image_file')) {
+            // Get the file from the request
 
-        $update = MasterGoods::updateData($id, $data);
-        $code = $update ? 200 : 400;
-        $ress = Response::response($code);
+
+            $path = $request->file('image_file')->getRealPath();
+            $logo = file_get_contents($path);
+            $base64 = base64_encode($logo);
+
+            $data = array(
+                'name'  => $request->input('name'),            
+                'description'  => $request->input('description'),
+                'price'  => $request->input('price'),
+                'is_active'  => $request->input('isActive'),
+                'code'  => $request->input('code'),
+                'updated_by' => $request->input('updated_by'),
+                'updated_at' => $now,
+                'image' => $base64,
+                'category' => $request->input('category')
+            );
+
+            $update = MasterGoods::updateData($id, $data);
+            $code = $update ? 200 : 400;
+            $ress = Response::response($code);
+
+
+        }else {            
+            $ress = Response::responseWithMessage(400, "update data image error");
+        }        
 
         return $ress;
     }
@@ -113,17 +169,17 @@ class MasterGoodController extends Controller
     }
 
     public function uploadImage(Request $request, $id){
-    
-        if( $request->file('image_file') ) {            
-            // Get the file from the request
-            $file = $request->file('image_file');
 
-            // Get the contents of the file
-            $contents = $file->openFile()->fread($file->getSize());
+        if( $request->file('image_file') ) {
+            // Get the file from the request
+
+            $path = $request->file('image_file')->getRealPath();
+            $logo = file_get_contents($path);
+            $base64 = base64_encode($logo);
 
             $data = array(
-                'image' => $contents
-            );            
+                'image' => $base64
+            );         
 
             $update = MasterGoods::updateData($id, $data);
 
@@ -138,5 +194,38 @@ class MasterGoodController extends Controller
     public function getImage($id){
         $data = MasterGoods::findById($id)->first();
         return $data->image;
+    }
+
+    public function findByName($name){        
+        $buildData = [];
+
+        if(strlen($name) >= 3){
+            $data = MasterGoods::findByName($name);
+
+            foreach ($data as $value) {
+                array_push($buildData, 
+                    [
+                        'masterGoodsId' => $value->masterGoodsId, 
+                        'name' => $value->name,
+                        'image' => env('APP_URL').'/mastergood/image/'.$value->masterGoodsId,
+                        'description' =>  $value->description,
+                        'price' => (int)$value->price,
+                        'isActive' => $value->isActive,
+                        'code' => $value->code,
+                        'currency' => $value->currency, 
+                        'category' => $value->category,
+                        'createdAt' => $value->createdAt,
+                        'createdBy' => $value->createdBy,
+                        'updatedAt' => $value->updatedAt,
+                        'updatedBy' => $value->updatedBy
+                    ]
+                );
+            }
+        }
+
+
+        $ress = Response::response(200, $buildData);
+
+        return $ress;
     }
 }

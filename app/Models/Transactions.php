@@ -92,7 +92,8 @@ class Transactions extends Model implements AuthenticatableContract, Authorizabl
             DB::commit();
 
             // die();
-            $results = true;
+            // $results = true;
+            $results = $resultTransaction;
 
         }catch (Exception $e){
             DB::rollback();
