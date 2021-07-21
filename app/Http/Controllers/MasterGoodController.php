@@ -196,11 +196,14 @@ class MasterGoodController extends Controller
         return $data->image;
     }
 
-    public function findByName($name){        
+    public function findByName(Request $request){        
         $buildData = [];
 
-        if(strlen($name) >= 3){
-            $data = MasterGoods::findByName($name);
+        $nameInput = $request->input('name');
+
+
+        if(strlen($nameInput) >= 3){
+            $data = MasterGoods::findByName($nameInput);
 
             foreach ($data as $value) {
                 array_push($buildData, 
