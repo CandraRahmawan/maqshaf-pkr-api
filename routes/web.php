@@ -23,7 +23,7 @@ $router->get('user/{id}', 'UserController@findById');
 $router->get('user/{id}/{pin}', 'UserController@findByIdAndPin');
 $router->post('user/add', 'UserController@insert');
 $router->put('user/update/{id}', 'UserController@updateData');
-$router->put('user/updatepin/{id}', 'UserController@updatePin');
+$router->put('user/update-pin/{id}', 'UserController@updatePin');
 
 
 $router->get('administrator/all', 'AdministratorController@findAll');
@@ -31,13 +31,13 @@ $router->get('administrator/{id}', 'AdministratorController@findById');
 $router->post('administrator/add', 'AdministratorController@insert');
 $router->post('administrator/login', 'AdministratorController@login');
 $router->put('administrator/update/{id}', 'AdministratorController@updateData');
-$router->put('administrator/updatepassword/{id}', 'AdministratorController@updatePassword');
+$router->put('administrator/update-password/{id}', 'AdministratorController@updatePassword');
 $router->delete('administrator/delete/{id}', 'AdministratorController@deleteDataById');
 
 
 $router->get('mastergood/all', 'MasterGoodController@findAll');
 $router->get('mastergood/{id}', 'MasterGoodController@findById');
-$router->get('mastergood/searchname/{name}', 'MasterGoodController@findByName');
+$router->get('mastergood/search', 'MasterGoodController@findByName');
 $router->get('mastergood/image/{id}', 'MasterGoodController@getImage');
 $router->post('mastergood/add', 'MasterGoodController@insert');
 $router->post('mastergood/update/{id}', 'MasterGoodController@updateData');
