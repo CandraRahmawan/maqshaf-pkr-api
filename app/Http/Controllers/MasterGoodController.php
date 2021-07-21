@@ -86,9 +86,10 @@ class MasterGoodController extends Controller
         if( $request->file('image_file') ) {
             // Get the file from the request            
 
-            $path = $request->file('image_file')->getRealPath();
-            $logo = file_get_contents($path);
-            $base64 = base64_encode($logo);
+              $file = $request->file('image_file');
+
+            // Get the contents of the file
+            $contents = $file->openFile()->fread($file->getSize());
 
             $data = array(            
                 'name'  => $request->input('name'),            
@@ -97,12 +98,12 @@ class MasterGoodController extends Controller
                 'is_active'  => 1,
                 'code'  => $request->input('code'),            
                 'created_by' => $request->input('createdBy'),
-                'image' => $base64
+                'image' => $contents
             );
 
             $save = MasterGoods::insert($data);
 
-            $ress = Response::response(200, $save);
+            $ress = Response::response(200);
 
 
         }else {            
@@ -120,11 +121,7 @@ class MasterGoodController extends Controller
 
         if($request->file('image_file')) {
             // Get the file from the request
-
-
-            $path = $request->file('image_file')->getRealPath();
-            $logo = file_get_contents($path);
-            $base64 = base64_encode($logo);
+            $contents = $file->openFile()->fread($file->getSize());
 
             $data = array(
                 'name'  => $request->input('name'),            
@@ -134,7 +131,7 @@ class MasterGoodController extends Controller
                 'code'  => $request->input('code'),
                 'updated_by' => $request->input('updated_by'),
                 'updated_at' => $now,
-                'image' => $base64,
+                'image' => $contents,
                 'category' => $request->input('category')
             );
 
