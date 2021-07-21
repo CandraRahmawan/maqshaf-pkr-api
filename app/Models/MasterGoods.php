@@ -44,7 +44,8 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
         $masterGoods->price  = $data['price'];
         $masterGoods->is_active  = $data['is_active'];
         $masterGoods->code  = $data['code'];        
-        $masterGoods->created_by  = $data['created_by'];        
+        $masterGoods->created_by  = $data['created_by'];
+        $masterGoods->image  = $data['image'];
         
         $masterGoods->save();
         $masterGoods->master_goods_id;
@@ -77,5 +78,5 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
         return $result;
 
     }
-   
+    
 }
