@@ -121,6 +121,8 @@ class MasterGoodController extends Controller
 
         if($request->file('image_file')) {
             // Get the file from the request
+
+            $file = $request->file('image_file');
             $contents = $file->openFile()->fread($file->getSize());
 
             $data = array(
