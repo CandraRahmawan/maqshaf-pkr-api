@@ -91,6 +91,16 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     }
 
+    public static function findByNameAndClass($name, $class){
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        ->where('full_name', 'like', '%' . $name . '%')
+        ->where('class', $class)
+        ->get();
+
+        return $results;
+
+    }
+
 
    
 }

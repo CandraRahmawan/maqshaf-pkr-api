@@ -105,6 +105,8 @@ class Deposit extends Model implements AuthenticatableContract, AuthorizableCont
             $depositTransaction->type = $dataDepositTransaction['type'];
             $depositTransaction->deposit_id = $dataDepositTransaction['deposit_id'];
             $depositTransaction->created_by = $dataDepositTransaction['created_by'];
+            $depositTransaction->transaction_id = $dataDepositTransaction['transaction_id'];
+            
 
             // DepositTransaction::save();
             DepositTransaction::insert($dataDepositTransaction);
@@ -135,7 +137,8 @@ class Deposit extends Model implements AuthenticatableContract, AuthorizableCont
                     'transaction_date' => $data['created_at'],
                     'created_by' => $data['created_by'],
                     'type' => '3',
-                    'deposit_id' => $resultDeposit->first()->deposit_id
+                    'deposit_id' => $resultDeposit->first()->deposit_id,
+                    'transaction_id' => null
 
                 );
 

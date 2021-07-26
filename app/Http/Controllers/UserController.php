@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Deposit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -82,5 +83,49 @@ class UserController extends Controller
         $update = User::updatePin($id, $pinOld, $data);
         
         return $update;
+    }
+
+    public function userSaldo($id){
+
+        $dataUser = User::findById($id);
+        $buildData = [];
+
+        if(!empty($dataUser->first())){
+            $userDeposit = Deposit::findByUserId($id);
+
+            if(!empty($userDeposit)){
+
+                array_push($buildData, 
+                    [
+                        'user' => $dataUser, 
+                        'deposit' => $userDeposit
+                    ]
+                );
+                
+            }else{
+                array_push($buildData, 
+                    [
+                        'user' => $dataUser, 
+                        'deposit' => null
+                    ]
+                );
+            }
+
+            return Response::response(200, $buildData);
+
+        }else{
+            return Response::response(400);
+        }        
+
+    }
+
+    public function userFindByNameAndClass(Request $request){
+        $name = $request->input('name');
+        $class = $request->input('class');
+
+        $data = User::findByNameAndClass($name, $class);
+
+        return Response::response(200, $data);
+
     }
 }

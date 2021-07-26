@@ -122,64 +122,73 @@ class DepositController extends Controller
 
             $dataDeposit = Deposit::findByUserId($userId);
 
-            $saldoFirts =  $dataDeposit->first()->saldo;
-            $totalBayar = $request->input('totalBayar');
-            $finalSaldo = $saldoFirts - $totalBayar;
-
-            $dataDepositForUpdate = array(            
-                'saldo'  => $finalSaldo,
-                'previous_saldo' => $dataDeposit->first()->saldo,         
-                'updated_at' => $now,
-                'updated_by' => $request->input('updatedBy'),
-            );
-
-            $dataDepositTransaction = array(
-                'transaction_code' => $transactionCode,
-                'debet' => $totalBayar,
-                'kredit' => 0,
-                'transaction_date' => $now,
-                'created_by' => $request->input('updatedBy'),
-                'type' => '0',
-                'deposit_id' => $dataDeposit->first()->depositId
-
-            );
-
             $pinSha = sha1($request->input('pin'));
             $dataUser = User::findByIdAndPin($userId, $pinSha);
 
             if(!empty($dataUser)){
-                if(!empty($dataDeposit) && $saldoFirts >= $totalBayar)
-                {
 
+                if(!empty($dataDeposit->first())){
+                    
+                    $saldoFirts =  $dataDeposit->first()->saldo;
+                    $totalBayar = $request->input('totalBayar');
+                    $finalSaldo = $saldoFirts - $totalBayar;
 
-                    $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+                    $dataDepositForUpdate = array(            
+                        'saldo'  => $finalSaldo,
+                        'previous_saldo' => $dataDeposit->first()->saldo,         
+                        'updated_at' => $now,
+                        'updated_by' => $request->input('updatedBy'),
+                    );
 
-                    $code = $debit ? 200 : 400;
-                    $ress = Response::response($code);
+                    $dataDepositTransaction = array(
+                        'transaction_code' => $transactionCode,
+                        'debet' => $totalBayar,
+                        'kredit' => 0,
+                        'transaction_date' => $now,
+                        'created_by' => $request->input('updatedBy'),
+                        'type' => '0',
+                        'deposit_id' => $dataDeposit->first()->depositId,
+                        'transaction_id' => $request->input('transactionId')
 
-                    return $ress;
+                    );
+
+                    if($saldoFirts >= $totalBayar)
+                    {
+                        $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+
+                        $code = $debit ? 200 : 400;                    
+
+                        $ressMessage = $code == 200 ? "debit: ". $totalBayar .", saldo: ". $finalSaldo : "failed";
+                        $ress = Response::responseWithMessage($code, $ressMessage);
+
+                        return $ress;
+
+                    }else{
+                        $ress = Response::responseWithMessage(400,"saldo Tidak mencukupi");
+                        return $ress;
+                    }
 
                 }else{
-                    $ress = Response::response(400);
+                    $ress = Response::responseWithMessage(400,"data Deposit User Tidak ditemukan");
                     return $ress;
+
                 }
-
             }else{
-                 $ress = Response::responseWithMessage(400,"pin salah");
-                    return $ress;
-            }
-            
-            
-        } catch (Exception $e) {
-            return $e;
-        }
+               $ress = Response::responseWithMessage(400,"pin salah");
+               return $ress;
+           }
 
+
+       } catch (Exception $e) {
+        return $e;
     }
 
-    public function kredit(Request $request, $userId){
+}
 
-        $code = 400;
-        $ressMessage = "";
+public function kredit(Request $request, $userId){
+
+    $code = 400;
+    $ressMessage = "";
 
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');        
@@ -187,9 +196,7 @@ class DepositController extends Controller
         $transactionCode = $this->generateTransactionCode();
         try {
 
-            $dataDeposit = Deposit::findByUserId($userId);
-
-            
+            $dataDeposit = Deposit::findByUserId($userId);            
 
             if(count($dataDeposit) == 0)
             {                
@@ -205,9 +212,10 @@ class DepositController extends Controller
                     'debet' => 0,
                     'kredit' => $totalBayar,
                     'transaction_date' => $now,                    
-                    'type' => '3'
+                    'type' => '3',
+                    'transactionId' => null
                 );                
-            
+
                 $kredit = Deposit::firstKredit($dataKredit);
                 
 
@@ -238,7 +246,8 @@ class DepositController extends Controller
                     'transaction_date' => $now,
                     'created_by' => $request->input('updatedBy'),
                     'type' => '3',
-                    'deposit_id' => $dataDeposit->first()->depositId
+                    'deposit_id' => $dataDeposit->first()->depositId,
+                    'transaction_id' => null
 
                 );
                 
@@ -260,57 +269,105 @@ class DepositController extends Controller
     public function buyItem(Request $request, $userId){
 
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
-        $now = date('Y-m-d H:i:s'); 
+        $now = date('Y-m-d H:i:s');
 
-        $dataTransaction = array(
-            "transaction_code" => $this->generateTransactionCode(),
-            "transaction_date" => $now,
-            "qty" => $request->input('qty'),
-            "user_id" => $userId,
-            "total" => $request->input('total'),
-            "items" => $request->input('items')
+        $validateBuy = $this->cekSaldoUserMinPrice($request->input('total'), $userId); 
 
+        // return $validateBuy;       
 
-        );
-
-        $result = Transactions::buyItem($dataTransaction);
-
-        $dataTransactionItem = TransactionItem::findByTransactionId($result->id);
-
-        $buildData = [];
-
-        foreach ($dataTransactionItem as $value) {
-            array_push($buildData, 
-                [
-                    "transaction_items_id" => $value->transaction_items_id,
-                    "transactionId" => $value->transaction_id,
-                    "price" => $value->price,
-                    "name" => $value->name,
-                    "qty" => $value->qty
-
-                ]
+        if($validateBuy['result'])
+        {
+            $dataTransaction = array(
+                "transaction_code" => $this->generateTransactionCode(),
+                "transaction_date" => $now,
+                "qty" => $request->input('qty'),
+                "user_id" => $userId,
+                "total" => $request->input('total'),
+                "items" => $request->input('items')
             );
-        }
 
-        $buildDataResult = [];
+            $result = Transactions::buyItem($dataTransaction);
 
-        array_push($buildDataResult, 
+            $dataTransactionItem = TransactionItem::findByTransactionId($result->id);
+
+            $buildData = [];
+
+            foreach ($dataTransactionItem as $value) {
+                array_push($buildData, 
+                    [
+                        "transaction_items_id" => $value->transactionItemsId,
+                        "transactionId" => $value->transactionId,
+                        "price" => $value->price,
+                        "name" => $value->name,
+                        "qty" => $value->qty
+
+                    ]
+                );
+            }
+
+            $buildDataResult = [];
+
+            array_push($buildDataResult, 
                 [
                     'transactionCode' => $result->transaction_code, 
                     'transactionDate' => $result->transaction_date,
                     'total' => (int) $result->total,
                     'qty' =>  (int) $result->qty,
                     'userId' => (int) $result->user_id,
-                    'transactionId' => (int) $result->transactionId,
+                    'saldo' => (int)$validateBuy['saldo'],
+                    'transactionId' => (int) $result->id,
                     'items' => $buildData
                     
                 ]
             );
 
+            return Response::response(200, $buildDataResult);
+        }else{
+            return Response::responseWithMessage(400, $validateBuy['message']);
+        }        
         
-        // return $result;
-        return Response::response(200, $buildDataResult);
+    }
+
+    public function cekSaldoUserMinPrice($totalBayar, $userId){
+
+
+        $dataDeposit = Deposit::findByUserId($userId);
         
+
+        if(!empty($dataDeposit->first())){
+
+            $saldoFirts =  $dataDeposit->first()->saldo;            
+
+            if($saldoFirts >= $totalBayar){
+
+                $result = array(
+                    "message" => "success",
+                    "result" => true,
+                    "saldo" => (int)$saldoFirts,
+                    "totalBayar" => (int)$totalBayar
+                );
+
+            }else{
+
+                $result = array(
+                    "message" => "saldo tidak mencukupi",
+                    "result" => false,
+                    "saldo" => (int)$saldoFirts,
+                    "totalBayar" => (int)$totalBayar
+                );
+
+            }
+
+        }else{
+            $result = array(
+                "message" => "data not found",
+                "result" => false,
+                "saldo" => (int)0,
+                "totalBayar" => (int)$totalBayar
+            );
+        }
+
+        return $result;
     }
 
 

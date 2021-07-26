@@ -21,8 +21,7 @@ class MasterGoodController extends Controller
 
     public function findAll(){        
 
-        $data = MasterGoods::getAll();
-        
+        $data = MasterGoods::getAll();        
 
         $buildData = [];
 
@@ -103,7 +102,9 @@ class MasterGoodController extends Controller
 
             $save = MasterGoods::insert($data);
 
-            $ress = Response::response(200);
+            $ress = $this->findById($save->id);
+
+            // $ress = Response::response(200);
 
 
         }else {            
@@ -182,7 +183,7 @@ class MasterGoodController extends Controller
 
             $update = MasterGoods::updateData($id, $data);
 
-            return $update;
+            return Response::response(200);
         } else {
             return "image error";
         }
@@ -201,7 +202,7 @@ class MasterGoodController extends Controller
         $nameInput = $request->input('name');
 
 
-        if(strlen($nameInput) >= 3){
+        if(strlen($nameInput) != 0){
             $data = MasterGoods::findByName($nameInput);
 
             foreach ($data as $value) {
@@ -223,6 +224,8 @@ class MasterGoodController extends Controller
                     ]
                 );
             }
+        }else{
+            return $this->findAll();
         }
 
 
