@@ -32,7 +32,7 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
     }
 
     public static function findById($id){
-        $result = DepositTransaction::select('deposit_transaction_id as depositTransactionId', 'transaction_code as transactionCode', 'debet', 'kredit', 'transaction_date as transactionDate', 'created_by as createdBy', 'type', 'deposit_id as depositId')
+        $result = DepositTransaction::select('deposit_transaction_id as depositTransactionId', 'transaction_code as transactionCode', 'debet', 'kredit', 'transaction_date as transactionDate', 'created_by as createdBy', 'type', 'deposit_id as depositId', 'transaction_id as transactionId')
         ->where('deposit_transaction_id', $id)
         ->get();
 
@@ -53,7 +53,8 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
             $depositTransaction->transaction_date = $data['transaction_date'];
             $depositTransaction->type = $data['type'];
             $depositTransaction->deposit_id = $data['deposit_id'];
-            $depositTransaction->created_by = $data['created_by']; 
+            $depositTransaction->created_by = $data['created_by'];
+            $depositTransaction->transaction_id = $data['transaction_id'];
                                 
 
             $depositTransaction->save();
