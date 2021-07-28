@@ -88,30 +88,11 @@ class UserController extends Controller
     public function userSaldo($id){
 
         $dataUser = User::findById($id);
-        $buildData = [];
+        
 
         if(!empty($dataUser->first())){
-            $userDeposit = Deposit::findByUserId($id);
 
-            if(!empty($userDeposit)){
-
-                array_push($buildData, 
-                    [
-                        'user' => $dataUser, 
-                        'deposit' => $userDeposit
-                    ]
-                );
-                
-            }else{
-                array_push($buildData, 
-                    [
-                        'user' => $dataUser, 
-                        'deposit' => null
-                    ]
-                );
-            }
-
-            return Response::response(200, $buildData);
+            return $this->buildJsonDataSaldo($dataUser->first(), $id);
 
         }else{
             return Response::response(400);
@@ -128,4 +109,64 @@ class UserController extends Controller
         return Response::response(200, $data);
 
     }
+
+    public function findByNis(Request $request){        
+        $nis = $request->input("nis");
+        $userId = $request->input("userId");        
+
+        if(!empty($nis)){
+            $dataUser = User::findByNis($nis);
+
+            if(!empty($dataUser->first())){
+
+                return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
+
+            }else{
+                return Response::response(400);
+            }     
+        
+        }else if(!empty($userId)){
+            $dataUser = User::findById($userId);
+
+            if(!empty($dataUser->first())){
+
+                return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
+
+            }else{
+                return Response::response(400);
+            }  
+        }else{
+            $message = "nis = null, isUser = null";
+            return Response::responseWithMessage(400, $message);
+            
+        }
+        
+    }
+
+    public function buildJsonDataSaldo($dataUser, $userId){
+        $buildData = [];
+
+        $userDeposit = Deposit::findByUserId($userId);
+
+        if(!empty($userDeposit)){
+
+            array_push($buildData, 
+                [                    
+                    'user' => $dataUser,
+                    'deposit' => $userDeposit->first()
+                ]
+            );
+
+        }else{
+            array_push($buildData, 
+                [
+                    'user' => $dataUser, 
+                    'deposit' => null
+                ]
+            );
+        }
+
+        return Response::responseWithoutArray(200, $buildData);        
+    }
+
 }

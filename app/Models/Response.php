@@ -51,5 +51,15 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
         return $response;
     }
 
+    public static function responseWithoutArray($code, $data = null){           
+        $response = [
+            "code" => $code, 
+            "message" => $code == 200 ? "Success" : "Bad Request", 
+            "data" => $code == 200 ? $data[0] : null,
+        ]; 
+
+        return $response;
+    }
+
 
 }
