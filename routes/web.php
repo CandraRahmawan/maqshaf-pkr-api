@@ -21,6 +21,8 @@ $router->get('/', function () use ($router) {
 $router->get('user/all', 'UserController@findAll');
 $router->post('user/add', 'UserController@insert');
 $router->get('user/search', 'UserController@userFindByNameAndClass');
+$router->get('user/saldo', 'UserController@findByNis');
+
 $router->put('user/update/{id}', 'UserController@updateData');
 $router->put('user/update-pin/{id}', 'UserController@updatePin');
 $router->get('user/saldo/{id}', 'UserController@userSaldo');
