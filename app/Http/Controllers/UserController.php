@@ -122,7 +122,7 @@ class UserController extends Controller
                 return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
 
             }else{
-                return Response::response(400);
+                return Response::response(200);
             }     
         
         }else if(!empty($userId)){
@@ -133,10 +133,10 @@ class UserController extends Controller
                 return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
 
             }else{
-                return Response::response(400);
+                return Response::response(200);
             }  
         }else{
-            $message = "nis = null, isUser = null";
+            $message = "nis and idUser cannot be null";
             return Response::responseWithMessage(400, $message);
             
         }

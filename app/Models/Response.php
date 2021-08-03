@@ -22,7 +22,8 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
             "data" => $code == 200 ? $data : [],
         ]; 
 
-        return $response;
+        // return $response;
+        return response($response, $code);
     }
 
     public static function responseWithPage($code, $page, $limit, $count, $data = []){
@@ -38,7 +39,8 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
         ]; 
 
 
-        return $response;
+        // return $response;
+        return response($response, $code);
     }
 
     public static function responseWithMessage($code, $message, $data = []){           
@@ -48,7 +50,8 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
             "data" => $code == 200 ? $data : [],
         ]; 
 
-        return $response;
+        // return $response;
+        return response($response, $code);
     }
 
     public static function responseWithoutArray($code, $data = null){           
@@ -58,7 +61,8 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
             "data" => $code == 200 ? $data[0] : null,
         ]; 
 
-        return $response;
+        // return $response;
+        return response($response, $code);
     }
 
 
