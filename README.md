@@ -3,7 +3,7 @@
 [![PHP](https://img.shields.io/badge/PHP-v7.4-blue)]()
 [![Lumen](https://img.shields.io/badge/Lumen-v8.2.3-red)]()
 
-Backend RestAPI Build using Lumen Framework.
+Backend RestAPI Build using Lumen Framework
 
 ## Running
 
