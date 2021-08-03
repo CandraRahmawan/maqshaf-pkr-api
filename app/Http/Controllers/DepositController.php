@@ -125,7 +125,7 @@ class DepositController extends Controller
             $pinSha = sha1($request->input('pin'));
             $dataUser = User::findByIdAndPin($userId, $pinSha);
 
-            if(!empty($dataUser)){
+            if(!empty($dataUser->first())){
 
                 if(!empty($dataDeposit->first())){
                     
