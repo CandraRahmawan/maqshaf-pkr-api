@@ -5,6 +5,8 @@ use App\Models\Administrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
+use Illuminate\Support\Str;
+
 
 class AdministratorController extends Controller
 {
@@ -103,16 +105,34 @@ class AdministratorController extends Controller
             $password = sha1($request->input('password'));
         
         
-        $login = Administrator::findByUsernameAndPassword($username, $password);
+        $login = Administrator::findByUsernameAndPassword($username, $password)->first();
 
-        if(count($login) == 1 && $login->first()->deletedAt == null){
-            $code = 200;
+        if(!empty($login) && $login->deletedAt == null){
+            $token = Str::random(40);
+
+            $data = array(
+                'token' => $token
+            );
+
+            $update = Administrator::updateData($login->administratorId, $data);
+
+            if($update){
+                $dataLogin = Administrator::findById($login->administratorId)->first();
+                $code = 200;
+                $ress = Response::response($code, $dataLogin);
+            }else{
+                $code = 400;
+                $message = "failed update token";
+                $ress = Response::responseWithMessage($code, $message);    
+            }            
 
         }else{
             $code = 400;
+            $message = "pasword salah";
+            $ress = Response::responseWithMessage($code, $message);
         }
         
-        $ress = Response::response($code, $login);
+        
 
         return $ress;
     }
@@ -133,5 +153,28 @@ class AdministratorController extends Controller
 
         return $ress;
 
+    }
+
+    public function logout(Request $request){
+        $administratorId = $request->input('administratorId');
+
+        $data = array(
+                'token' => null
+            );
+
+        $update = Administrator::updateData($administratorId, $data);
+
+        if($update){            
+            $code = 200;
+            $message = "logout success";
+            $ress = Response::responseWithMessage($code, $message);
+
+        }else{
+            $code = 400;
+            $message = "failed logout";
+            $ress = Response::responseWithMessage($code, $message);
+        }
+
+        return $ress;
     }
 }

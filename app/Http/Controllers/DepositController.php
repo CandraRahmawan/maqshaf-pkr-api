@@ -125,6 +125,8 @@ class DepositController extends Controller
             $pinSha = sha1($request->input('pin'));
             $dataUser = User::findByIdAndPin($userId, $pinSha);
 
+            return $pinSha . ", original pin = ".$request->input('pin');
+
             if(!empty($dataUser->first())){
 
                 if(!empty($dataDeposit->first())){
@@ -154,11 +156,16 @@ class DepositController extends Controller
 
                     if($saldoFirts >= $totalBayar)
                     {
+                        //insert and update data transaksi
                         $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
 
-                        $code = $debit ? 200 : 400;                    
+                        $code = $debit ? 200 : 400;
 
-                        $ressMessage = $code == 200 ? "debit: ". $totalBayar .", saldo: ". $finalSaldo : "failed";
+                        // Total bayar Rp 17.500, sisa saldo anda adalah Rp 15.0000
+       
+
+                        $ressMessage = $code == 200 ? "Total bayar Rp ". $totalBayar .", sisa saldo anda adalah Rp ". $finalSaldo : "bad request";
+
                         $ress = Response::responseWithMessage($code, $ressMessage);
 
                         return $ress;
@@ -220,7 +227,7 @@ public function kredit(Request $request, $userId){
                 
 
                 $code = $kredit ? 200 : 400;
-                $ressMessage = $code == 200 ? "kredit: ". $totalBayar .", saldo: ". $totalBayar : "failed";
+                $ressMessage = $code == 200 ? "kredit: ". $totalBayar .", saldo: ". $totalBayar : "bad request";
                 
                 $ress = Response::responseWithMessage($code, $ressMessage);
                 
@@ -321,7 +328,7 @@ public function kredit(Request $request, $userId){
                 ]
             );
 
-            return Response::response(200, $buildDataResult);
+            return Response::response(200, $buildDataResult[0]);
         }else{
             return Response::responseWithMessage(400, $validateBuy['message']);
         }        

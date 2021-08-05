@@ -69,8 +69,19 @@ class UserController extends Controller
         );
 
         $update = User::updateData($id, $data);
-        $ress = $update ? "success" : "failed";
-        return $ress;
+        // $ress = $update ? "success" : "failed";
+
+        if($update){
+            $code = 200;
+            $message = "update data success";
+        }else{
+            $code = 400;
+            $message = "update data failed";
+        }
+
+        return Response::responseWithMessage($code, $message);
+
+        // return $ress;
     }
 
     public function updatePin(Request $request, $id){
@@ -80,9 +91,18 @@ class UserController extends Controller
             'updated_at' => $now = date('Y-m-d H:i:s')
         );
         $pinOld = sha1($request->input('oldPin'));
-        $update = User::updatePin($id, $pinOld, $data);
+        $update = User::updatePin($id, $pinOld, $data);        
+
+        if($update){
+            $code = 200;
+            $message = "update pin success";
+        }else{
+            $code = 400;
+            $message = "update pin failed";
+        }
+
+        return Response::responseWithMessage($code, $message);
         
-        return $update;
     }
 
     public function userSaldo($id){
@@ -122,7 +142,8 @@ class UserController extends Controller
                 return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
 
             }else{
-                return Response::response(200);
+                $message = "Siswa Tidak ditemukan";
+                return Response::responseWithMessage(400, $message);
             }     
         
         }else if(!empty($userId)){
@@ -133,8 +154,9 @@ class UserController extends Controller
                 return $this->buildJsonDataSaldo($dataUser->first(), $dataUser->first()->userId);
 
             }else{
-                return Response::response(200);
-            }  
+                $message = "Siswa Tidak ditemukan";
+                return Response::responseWithMessage(400, $message);
+            }
         }else{
             $message = "nis and idUser cannot be null";
             return Response::responseWithMessage(400, $message);
@@ -167,6 +189,27 @@ class UserController extends Controller
         }
 
         return Response::responseWithoutArray(200, $buildData);        
+    }
+
+    public function resetPin(Request $request, $id){
+        $data = array(
+            'pin' => sha1('111111'),          
+            'updated_by' => $request->input('updatedBy'),
+            'updated_at' => $now = date('Y-m-d H:i:s')
+        );
+        
+        $update = User::updateData($id, $data);
+
+        if($update){
+            $code = 200;
+            $message = "reset pin success";
+        }else{
+            $code = 400;
+            $message = "reset pin failed";
+        }
+
+        return Response::responseWithMessage($code, $message);
+        
     }
 
 }
