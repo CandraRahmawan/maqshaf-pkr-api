@@ -21,14 +21,14 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
 
     public static function getAll(){
 
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deleteAt', 'delete_by as deleteBy')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deleteAt', 'delete_by as deleteBy', 'token')
         ->get();
 
         return $result;
     }
 
     public static function findById($id){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
         ->where('administrator_id', $id)
         ->get();
 
@@ -58,6 +58,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
             $result = Administrator::where('administrator_id', $id)        
             ->update($data);   
             DB::commit();
+            $result = true;
 
         }catch (Exception $e){
             DB::rollback();
@@ -78,6 +79,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
             ->update($data);   
 
             DB::commit();
+            $result = true;
 
         }catch (Exception $e){
             DB::rollback();
@@ -88,7 +90,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     }
 
     public static function findByUsernameAndPassword($username, $password){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
         ->where('username', $username)
         ->where('password', $password)
         ->get();

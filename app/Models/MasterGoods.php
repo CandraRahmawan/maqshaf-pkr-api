@@ -24,8 +24,8 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
     public static function getAll(){
 
         $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'currency', 'category', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
-        ->orderBy('master_goods_id', 'DESC')
-        ->get();
+        ->orderBy('master_goods_id', 'DESC')        
+        ->paginate(10);
 
         return $result;
     }

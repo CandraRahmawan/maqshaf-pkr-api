@@ -26,16 +26,12 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
         return response($response, $code);
     }
 
-    public static function responseWithPage($code, $page, $limit, $count, $data = []){
+    public static function responseWithPage($code, $data = [], $pageSummary){
         $response = [
             "code" => $code, 
             "message" => $code == 200 ? "Success" : "Bad Request", 
             "data" => $code == 200 ? $data : [], 
-            "pageSummary" => [
-                "page" => $page, 
-                "limit" => $limit, 
-                "totalCount" => $count 
-            ] 
+            "pageSummary" => $pageSummary
         ]; 
 
 
