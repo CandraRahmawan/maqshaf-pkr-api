@@ -18,26 +18,26 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($router) {
-	$router->post('user/add', 'UserController@insert');
-	$router->put('user/update/{id}', 'UserController@updateData');
+	$router->post('user/add', [ 'uses' =>'UserController@insert']);
+	$router->put('user/update/{id}', [ 'uses' =>'UserController@updateData']);
 
 
-	$router->get('administrator/all', 'AdministratorController@findAll');
-	$router->post('administrator/add', 'AdministratorController@insert');
-	$router->put('administrator/update/{id}', 'AdministratorController@updateData');
-	$router->put('administrator/update-password/{id}', 'AdministratorController@updatePassword');
-	$router->delete('administrator/delete/{id}', 'AdministratorController@deleteDataById');
-	$router->get('administrator/{id}', 'AdministratorController@findById');
+	$router->get('administrator/all', [ 'uses' =>'AdministratorController@findAll']);
+	$router->post('administrator/add', [ 'uses' =>'AdministratorController@insert']);
+	$router->put('administrator/update/{id}', [ 'uses' =>'AdministratorController@updateData']);
+	$router->put('administrator/update-password/{id}', [ 'uses' =>'AdministratorController@updatePassword']);
+	$router->delete('administrator/delete/{id}', [ 'uses' =>'AdministratorController@deleteDataById']);
+	$router->get('administrator/{id}', [ 'uses' =>'AdministratorController@findById']);
 
 
 	$router->get('deposit/all', [ 'uses' => 'DepositController@findAll']);
 
 
-	$router->post('mastergood/add', 'MasterGoodController@insert');
-	$router->post('mastergood/update/{id}', 'MasterGoodController@updateData');
+	$router->post('mastergood/add', [ 'uses' =>'MasterGoodController@insert']);
+	$router->post('mastergood/update/{id}', [ 'uses' =>'MasterGoodController@updateData']);
 
 
-	$router->get('transactions/all', 'TransactionsController@findAll');
+	$router->get('transactions/all', [ 'uses' =>'TransactionsController@findAll']);
 
 });
 
