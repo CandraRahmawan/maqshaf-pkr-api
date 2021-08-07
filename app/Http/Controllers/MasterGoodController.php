@@ -20,7 +20,7 @@ class MasterGoodController extends Controller
     
 
     public function findAll(){        
-
+        $limit = $request->input('limit');
         $data = MasterGoods::getAll();        
 
         $buildData = [];
