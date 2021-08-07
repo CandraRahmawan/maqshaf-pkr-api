@@ -19,7 +19,7 @@ class MasterGoodController extends Controller
     }
     
 
-    public function findAll(){        
+    public function findAll(Request $request){        
         $limit = $request->input('limit');
         $data = MasterGoods::getAll();        
 
