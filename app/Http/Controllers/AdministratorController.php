@@ -45,11 +45,13 @@ class AdministratorController extends Controller
     }
 
     public function insert(Request $request){
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
         $data = array(            
             'full_name'  => $request->input('fullName'),
             'password' => sha1('admin123'),
             'username'  => $request->input('username'),
-            'created_by' => $request->input('createdBy')            
+            'created_by' => $dataAdmin
         );
 
         $save = Administrator::insert($data);
@@ -63,11 +65,12 @@ class AdministratorController extends Controller
     public function updateData(Request $request, $id){        
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(
             'full_name'  => $request->input('fullName'),            
             'username'  => $request->input('username'),         
-            'updated_by' => $request->input('updatedBy'),
+            'updated_by' => $dataAdmin,
             'updated_at' => $now
         );
 
@@ -81,11 +84,12 @@ class AdministratorController extends Controller
     public function updatePassword(Request $request, $id){
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
-
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+        
         $data = array(
             'username' => $request->input('username'),
             'password' => sha1($request->input('password')),          
-            'updated_by' => $request->input('updatedBy'),
+            'updated_by' => $dataAdmin,
             'updated_at' => $now
         );
         $passOld = sha1($request->input('passwordOld'));
@@ -141,9 +145,10 @@ class AdministratorController extends Controller
 
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(                   
-            'delete_by' => $request->input('deleteBy'),
+            'delete_by' => $dataAdmin,
             'delete_at' => $now
         );
 
@@ -176,5 +181,25 @@ class AdministratorController extends Controller
         }
 
         return $ress;
+    }
+
+    public function resetPassword(Request $request, $id){
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
+        $now = date('Y-m-d H:i:s');
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
+        $data = array(
+            'password' => sha1('admin123'),           
+            'updated_by' => $dataAdmin,
+            'updated_at' => $now
+        );
+        
+        $update = Administrator::updateData($id, $data);
+
+        $code = $update ? 200 : 400;
+        $ress = Response::response($code);
+
+        return $ress;
+        
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 
 class MasterGoods extends Model implements AuthenticatableContract, AuthorizableContract
@@ -40,13 +41,16 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
     }
 
     public static function insert($data){
+        
+        $uuidStr = Str::uuid();
+
         $masterGoods = new MasterGoods();
         
         $masterGoods->name  = $data['name'];        
         $masterGoods->description  = $data['description'];
         $masterGoods->price  = $data['price'];
         $masterGoods->is_active  = $data['is_active'];
-        $masterGoods->code  = $data['code'];        
+        $masterGoods->code  = $uuidStr;        
         $masterGoods->created_by  = $data['created_by'];
         $masterGoods->image  = $data['image'];
         

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Deposit;
+use App\Models\Administrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -44,6 +45,7 @@ class UserController extends Controller
     }
 
     public function insert(Request $request){
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
         $data = array(
             'nis' => $request->input('nis'),
             'full_name'  => $request->input('fullName'),
@@ -51,7 +53,7 @@ class UserController extends Controller
             'address' => $request->input('address'),
             // 'pin' => sha1($request->input('pin')),
             'pin' => sha1(111111),
-            'created_by' => $request->input('createdBy'),
+            'created_by' => $dataAdmin,
         );
 
         $save = User::insert($data);
@@ -60,12 +62,14 @@ class UserController extends Controller
     }
 
     public function updateData(Request $request, $id){
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
         $data = array(
             'nis' => $request->input('nis'),
             'full_name'  => $request->input('fullName'),
             'class'  => $request->input('class'),
             'address' => $request->input('address'),            
-            'updated_by' => $request->input('updatedBy'),
+            'updated_by' => $dataAdmin,
         );
 
         $update = User::updateData($id, $data);
