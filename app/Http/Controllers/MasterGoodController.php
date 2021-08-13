@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\MasterGoods;
+use App\Models\Administrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -92,7 +93,9 @@ class MasterGoodController extends Controller
     }
 
     public function insert(Request $request){
-
+        
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+        
         if( $request->file('image_file') ) {
             // Get the file from the request            
 
@@ -101,13 +104,15 @@ class MasterGoodController extends Controller
             // Get the contents of the file
             $contents = $file->openFile()->fread($file->getSize());
 
+            // $dataAdmin = $request->header('api_token');
+
             $data = array(            
                 'name'  => $request->input('name'),            
                 'description'  => $request->input('description'),
                 'price'  => $request->input('price'),
                 'is_active'  => 1,
                 'code'  => $request->input('code'),            
-                'created_by' => $request->input('createdBy'),
+                'created_by' => $dataAdmin,
                 'image' => $contents
             );
 
@@ -130,6 +135,7 @@ class MasterGoodController extends Controller
     public function updateData(Request $request, $id){        
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         if($request->file('image_file')) {
             // Get the file from the request
@@ -143,7 +149,7 @@ class MasterGoodController extends Controller
                 'price'  => $request->input('price'),
                 'is_active'  => $request->input('isActive'),
                 'code'  => $request->input('code'),
-                'updated_by' => $request->input('updated_by'),
+                'updated_by' => $dataAdmin,
                 'updated_at' => $now,
                 'image' => $contents,
                 'category' => $request->input('category')
