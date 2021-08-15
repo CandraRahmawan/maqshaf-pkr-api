@@ -221,8 +221,12 @@ class MasterGoodController extends Controller
 
         if(strlen($nameInput) != 0){
             $data = MasterGoods::findByName($nameInput);
+            
+        }else{
+            $data = MasterGoods::findAll();            
+        }
 
-            foreach ($data as $value) {
+        foreach ($data as $value) {
                 array_push($buildData, 
                     [
                         'masterGoodsId' => $value->masterGoodsId, 
@@ -241,12 +245,9 @@ class MasterGoodController extends Controller
                     ]
                 );
             }
-        }else{
-            return $this->findAll();
-        }
 
 
-        $ress = Response::response(200, $buildData);
+        $ress = Response::response(200, $buildData, $data->count());
 
         return $ress;
     }

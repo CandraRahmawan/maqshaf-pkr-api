@@ -15,10 +15,11 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
 {
     use Authenticatable, Authorizable, HasFactory;
 
-    public static function response($code, $data = []){           
+    public static function response($code, $data = [], $countData = 0){           
         $response = [
-            "code" => $code, 
-            "message" => $code == 200 ? "Success" : "Bad Request", 
+            "code" => $code,
+            "message" => $code == 200 ? "Success" : "Bad Request",
+            "countData" => $countData,
             "data" => $code == 200 ? $data : [],
         ]; 
 
