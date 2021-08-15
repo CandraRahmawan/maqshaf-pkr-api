@@ -32,7 +32,12 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	$router->get('administrator/{id}', [ 'uses' =>'AdministratorController@findById']);
 
 
-	$router->get('deposit/all', [ 'uses' => 'DepositController@findAll']);
+	$router->get('deposit/all', [ 'uses' => 'DepositController@findByAllKredit']);
+	$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
+
+
+	$router->get('debet/all', [ 'uses' => 'DepositController@findByAllDebet']);
+	
 
 	$router->get('mastergood/all', 'MasterGoodController@findAll');
 	$router->post('mastergood/add', [ 'uses' =>'MasterGoodController@insert']);
@@ -40,6 +45,8 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 
 
 	$router->get('transactions/all', [ 'uses' =>'TransactionsController@findAll']);
+
+	$router->post('withDrawl/{id}', [ 'uses' =>'DepositController@withDrawl']);
 
 });
 
@@ -54,11 +61,8 @@ $router->get('user/{id}/{pin}', 'UserController@findByIdAndPin');
 $router->get('user/{id}', 'UserController@findById');
 
 
-
 $router->post('administrator/login', 'AdministratorController@login');
 $router->post('administrator/logout', 'AdministratorController@logout');
-
-
 
 
 $router->get('mastergood/search', 'MasterGoodController@findByName');
@@ -67,12 +71,9 @@ $router->get('mastergood/image/{id}', 'MasterGoodController@getImage');
 $router->get('mastergood/{id}', 'MasterGoodController@findById');
 
 
-
-$router->post('deposit/debet/{userId}', 'DepositController@debit');
-$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
+$router->post('deposit/debet/{userId}', 'DepositController@debet');
 $router->post('transactions/buy/{userId}', 'DepositController@buyItem');
 $router->get('deposit/{id}', 'DepositController@findById');
-
 
 
 $router->post('transactions/add', 'TransactionsController@insert');

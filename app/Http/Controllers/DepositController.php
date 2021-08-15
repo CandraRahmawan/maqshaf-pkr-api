@@ -6,6 +6,7 @@ use App\Models\DepositTransaction;
 use App\Models\TransactionItem;
 use App\Models\Transactions;
 use App\Models\User;
+use App\Models\Administrator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -110,7 +111,7 @@ class DepositController extends Controller
         return $replaceFour;
     }
 
-    public function debit(Request $request, $userId){
+    public function debet(Request $request, $userId){
 
         $code = 400;
 
@@ -125,14 +126,14 @@ class DepositController extends Controller
             $pinSha = sha1($request->input('pin'));
             $dataUser = User::findByIdAndPin($userId, $pinSha);
 
-            return $pinSha . ", original pin = ".$request->input('pin');
+            
 
             if(!empty($dataUser->first())){
 
                 if(!empty($dataDeposit->first())){
                     
                     $saldoFirts =  $dataDeposit->first()->saldo;
-                    $totalBayar = $request->input('totalBayar');
+                    $totalBayar = $request->input('total');
                     $finalSaldo = $saldoFirts - $totalBayar;
 
                     $dataDepositForUpdate = array(            
@@ -196,6 +197,7 @@ public function kredit(Request $request, $userId){
 
     $code = 400;
     $ressMessage = "";
+    $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');        
@@ -207,13 +209,13 @@ public function kredit(Request $request, $userId){
 
             if(count($dataDeposit) == 0)
             {                
-                $totalBayar = $request->input('totalBayar');
+                $totalBayar = $request->input('saldo');
 
                 $dataKredit = array(            
                     'saldo'  => $totalBayar,
                     'previous_saldo' => 0,         
                     'created_at' => $now,
-                    'created_by' => $request->input('updatedBy'),
+                    'created_by' => $dataAdmin,
                     'user_id' => $userId,
                     'transaction_code' => $transactionCode,
                     'debet' => 0,
@@ -236,14 +238,14 @@ public function kredit(Request $request, $userId){
             }else{
 
                 $saldoFirts =  $dataDeposit->first()->saldo;
-                $totalBayar = $request->input('totalBayar');
+                $totalBayar = $request->input('saldo');
                 $finalSaldo = $saldoFirts + $totalBayar;
 
                 $dataDepositForUpdate = array(            
                     'saldo'  => $finalSaldo,
                     'previous_saldo' => $dataDeposit->first()->saldo,         
                     'updated_at' => $now,
-                    'updated_by' => $request->input('updatedBy'),
+                    'updated_by' => $dataAdmin,
                 );
 
                 $dataDepositTransaction = array(
@@ -251,7 +253,7 @@ public function kredit(Request $request, $userId){
                     'debet' => 0,
                     'kredit' => $totalBayar,
                     'transaction_date' => $now,
-                    'created_by' => $request->input('updatedBy'),
+                    'created_by' => $dataAdmin,
                     'type' => '3',
                     'deposit_id' => $dataDeposit->first()->depositId,
                     'transaction_id' => null
@@ -377,6 +379,145 @@ public function kredit(Request $request, $userId){
         return $result;
     }
 
+    public function findByAllKredit(Request $request){
+        $limit = $request->input('limit');
+        $data = DepositTransaction::getAllKredit($limit);
+        
+        $buildData = $this->buildDataDebitOrKreditAll($data);
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
+        
+        // $ress = Response::response(200, $buildData);
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
+        return $ress;
+    }
+
+    public function findByAllDebet(Request $request){
+        $limit = $request->input('limit');
+        $data = DepositTransaction::getAllDebit($limit);
+        // return $data;
+        
+        $buildData = $this->buildDataDebitOrKreditAll($data);
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
+        
+        
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
+        return $ress;
+    }
+
+    public function buildDataDebitOrKreditAll($data){
+
+        $buildData = [];
+
+        foreach ($data as $value) {
+            array_push($buildData, 
+                [
+                    'depositTransactionId' => $value->deposit_transaction_id, 
+                    'transactionCode' => $value->transaction_code,
+                    'debet' => (int)$value->debet,
+                    'kredit' =>  (int)$value->kredit,
+                    'transactionDate' => $value->transaction_date,
+                    'createdBy' => $value->created_by,
+                    'type' => $value->type,
+                    'depositId' => $value->deposit_id, 
+                    'transactionId' => $value->transaction_id,
+                    'total' => $value->total ? $value->total : null,
+                    "qty" => $value->qty ? $value->qty : null,
+                    "userId" => $value->user_id ? $value->user_id: null,
+                    "nis" => $value->nis ? $value->nis : null,
+                    "fullName" => $value->full_name ? $value->full_name : null,
+                    "class" => $value->class ? $value->class : null,
+                    "address" => $value->address ? $value->address : null
+
+                ]
+            );
+        }
+
+        return $buildData;
+
+    }
+
+    public function withDrawl(Request $request, $id){
+
+        $saldoPull = $request->input('saldo');
+
+        $code = 400;
+
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
+        $now = date('Y-m-d H:i:s');        
+
+        $transactionCode = $this->generateTransactionCode();
+
+        $dataUser = User::findById($id)->first();
+
+        $dataDepositUser = Deposit::findByUserId($id)->first();
+
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
+        if(!empty($dataUser) && !empty($dataDepositUser)){
+
+            $totalSaldo = $dataDepositUser->saldo - $saldoPull;            
+
+            if($totalSaldo >= 0){                
+
+                $dataDepositForUpdate = array(            
+                    'saldo'  => $totalSaldo,
+                    'previous_saldo' => $dataDepositUser->saldo,         
+                    'updated_at' => $now,
+                    'updated_by' => $dataAdmin,
+                );
+
+
+                $dataDepositTransaction = array(
+                    "transaction_code" => $transactionCode,
+                    "debet" => $saldoPull,
+                    "kredit" => 0,
+                    "transaction_date" => $now,
+                    "type" => 2,
+                    "deposit_id" => $dataDepositUser->depositId,
+                    "created_by" => $dataAdmin,
+                    "transaction_id" => null,
+                );
+
+                $dataWithDrawl = Deposit::debetOrKredit($dataDepositUser->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+
+                $code = $dataWithDrawl ? 200 : 400;       
+
+                $message = $code == 200 ? "Total Pengambilan Rp ". $saldoPull .", sisa saldo anda adalah Rp ". $totalSaldo : "bad request";
+
+                $ress = Response::responseWithMessage($code, $message);
+
+                // return $ress;
+
+            }else{
+                $message = "saldo tidak mencukupi, total saldo anda = " . $dataDepositUser->saldo;
+                $ress = Response::responseWithMessage($code, $message);
+            }
+
+        }else{
+            $message = "user not found";
+            $ress = Response::responseWithMessage($code, $message);
+        }
+
+        return $ress;
+    }
 
     
 }

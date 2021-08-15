@@ -83,6 +83,26 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
 
         return $result;
 
-    }    
+    }
+
+    public static function getAllKredit($limit = 10){
+        $result = DepositTransaction::select('*')        
+        ->where('type', 3)
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
+
+    public static function getAllDebit($limit = 10){
+        $result = DepositTransaction::select('*')
+        ->join('transactions', 'transactions.transaction_id','=', 'deposit_transactions.transaction_id')
+        ->join('users', 'users.user_id', '=', 'transactions.user_id')
+        ->where('type', 1)
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
    
 }
