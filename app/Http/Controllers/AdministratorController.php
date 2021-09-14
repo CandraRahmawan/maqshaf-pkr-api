@@ -21,10 +21,42 @@ class AdministratorController extends Controller
     }
     
 
-    public function findAll(){        
+    public function findAll(Request $request){        
+        $limit = $request->input('limit');
 
-        $data = Administrator::getAll();
-        $ress = Response::response(200, $data);
+        $buildData = [];
+        $data = Administrator::getAll($limit);
+
+        // $ress = Response::response(200, $data);
+
+        foreach ($data as $value) {
+            array_push($buildData, 
+                [
+                    'administratorId' => $value->administratorId, 
+                    'fullName' => $value->fullName,
+                    'username' => (int)$value->username,
+                    'token' => $value->token,                    
+                    'createdAt' => $value->createdAt,
+                    'createdBy' => $value->createdBy,
+                    'updatedAt' => $value->updatedAt, 
+                    'updatedBy' => $value->updatedBy
+
+                ]
+            );
+        }
+        
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);        
+        
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
         
         return $ress;
     }
@@ -48,8 +80,8 @@ class AdministratorController extends Controller
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(            
-            'full_name'  => $request->input('fullName'),
-            'password' => sha1('admin123'),
+            'full_name'  => $request->input('fullName'),            
+            'password' => sha1($request->input('password')),
             'username'  => $request->input('username'),
             'created_by' => $dataAdmin
         );

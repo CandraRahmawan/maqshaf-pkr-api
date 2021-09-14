@@ -18,16 +18,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $connection = 'mysql';
     public $timestamps = false;
 
-<<<<<<< HEAD
-    public static function findAll(){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
-        // ->where('nis', '1111')
-        ->get();
-=======
     public static function findAll($limit=5){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
         ->paginate($limit);
->>>>>>> [dicky]: update api
 
         return $results;
     }
