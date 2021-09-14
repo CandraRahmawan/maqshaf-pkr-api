@@ -21,10 +21,42 @@ class UserController extends Controller
     }
     
 
-    public function findAll(){        
+    public function findAll(Request $request){        
+        $limit = $request->input('limit');
 
-        $data = User::findAll();
-        $ress = Response::response(200, $data);
+        $buildData = [];
+        $data = User::findAll($limit);
+        // return $data;
+
+        foreach ($data as $value) {
+            array_push($buildData, 
+                [
+                    'userId' => $value->userId, 
+                    'nis' => $value->nis,
+                    'fullName' => (int)$value->fullName,
+                    'class' =>  (int)$value->class,
+                    'address' => $value->address,
+                    'createdAt' => $value->createdAt,
+                    'createdBy' => $value->createdBy,
+                    'updatedAt' => $value->updatedAt, 
+                    'updatedBy' => $value->updatedBy
+
+                ]
+            );
+        }
+        
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);        
+        
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
         
         return $ress;
     }
@@ -57,7 +89,19 @@ class UserController extends Controller
         );
 
         $save = User::insert($data);
-        return $save;
+        // return $save->first();
+        if($save){
+            $code = 200;
+            $message = "update data success";
+
+        }else{
+            $code = 400;
+            $message = "update data failed";
+        }
+
+        $ress = Response::responseWithMessage($code, $save);
+
+        return $ress;
 
     }
 

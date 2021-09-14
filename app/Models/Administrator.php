@@ -17,12 +17,15 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     
     protected $connection = 'mysql';
     protected $table = 'administrator';
+    public $timestamps = false;
 
 
-    public static function getAll(){
+    public static function getAll($limit){
 
         $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deleteAt', 'delete_by as deleteBy', 'token')
-        ->get();
+
+        ->where('delete_at',null)
+        ->paginate($limit);
 
         return $result;
     }
