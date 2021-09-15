@@ -33,10 +33,12 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 
 
 	$router->get('deposit/all', [ 'uses' => 'DepositController@findByAllKredit']);
+	$router->get('deposit/search', [ 'uses' => 'DepositController@findAllKreditByTrxCode']);
 	$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
 
 
 	$router->get('debet/all', [ 'uses' => 'DepositController@findByAllDebet']);
+	$router->get('debet/search', [ 'uses' => 'DepositController@findAllDebetNisOrTransactionCode']);
 	
 
 	$router->get('mastergood/all', 'MasterGoodController@findAll');

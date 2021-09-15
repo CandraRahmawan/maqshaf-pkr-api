@@ -519,5 +519,53 @@ public function kredit(Request $request, $userId){
         return $ress;
     }
 
+    public function findAllKreditByTrxCode(Request $request){
+        $limit = $request->input('limit');
+        $trxCode = $request->input('transactionCode');
+
+        $data = DepositTransaction::getAllKreditFindByTrxCOde($limit, $trxCode);
+
+        
+        $buildData = $this->buildDataDebitOrKreditAll($data);
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
+        
+        // $ress = Response::response(200, $buildData);
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
+        return $ress;
+    }
+
+    public function findAllDebetNisOrTransactionCode(Request $request){
+        $limit = $request->input('limit');
+        $trxCode = $request->input('transactionCode');
+        $nis = $request->input('nis');
+        $data = DepositTransaction::getDebitByNisOrTransactionCode($limit, $nis, $trxCode);
+        // return $data;
+        
+        $buildData = $this->buildDataDebitOrKreditAll($data);
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
+        
+        
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
+        return $ress;
+    }
+
     
 }

@@ -104,5 +104,30 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
 
         return $result;
     }
+
+    public static function getAllKreditFindByTrxCOde($limit = 10, $trxCode){
+        $result = DepositTransaction::select('*')        
+        ->where('type', 3)
+        ->where('transaction_code', 'like', '%' . $trxCode . '%')
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
+
+    public static function getDebitByNisOrTransactionCode($limit = 10, $nis, $trxCode){
+        $result = DepositTransaction::select('*')
+        ->join('transactions', 'transactions.transaction_id','=', 'deposit_transactions.transaction_id')
+        ->join('users', 'users.user_id', '=', 'transactions.user_id')
+        ->where('type', 1)
+        ->where(function($buildWhere) use ($nis, $trxCode){
+            $buildWhere->where('transactions.transaction_code',$trxCode)
+            ->orWhere('users.nis', $nis);
+        })
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
    
 }
