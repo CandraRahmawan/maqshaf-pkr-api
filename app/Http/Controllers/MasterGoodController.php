@@ -155,14 +155,32 @@ class MasterGoodController extends Controller
                 'category' => $request->input('category')
             );
 
+        }else {
+
+            $data = array(
+                'name'  => $request->input('name'),            
+                'description'  => $request->input('description'),
+                'price'  => $request->input('price'),
+                'is_active'  => $request->input('isActive'),
+                'code'  => $request->input('code'),
+                'updated_by' => $dataAdmin,
+                'updated_at' => $now,                
+                'category' => $request->input('category')
+            );
+            
+        }
+
+        try {
+            
             $update = MasterGoods::updateData($id, $data);
             $code = $update ? 200 : 400;
             $ress = Response::response($code);
 
-
-        }else {            
-            $ress = Response::responseWithMessage(400, "update data image error");
-        }        
+        } catch (Exception $e) {
+            
+            $code = 400;
+            $ress = Response::response($code);
+        }
 
         return $ress;
     }
