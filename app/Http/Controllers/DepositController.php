@@ -125,71 +125,76 @@ class DepositController extends Controller
 
             $pinSha = sha1($request->input('pin'));
             $dataUser = User::findByIdAndPin($userId, $pinSha);
-
             
 
             if(!empty($dataUser->first())){
+                if(empty($dataUser->first()->isDelete)){
 
-                if(!empty($dataDeposit->first())){
-                    
-                    $saldoFirts =  $dataDeposit->first()->saldo;
-                    $totalBayar = $request->input('total');
-                    $finalSaldo = $saldoFirts - $totalBayar;
+                    if(!empty($dataDeposit->first())){
 
-                    $dataDepositForUpdate = array(            
-                        'saldo'  => $finalSaldo,
-                        'previous_saldo' => $dataDeposit->first()->saldo,         
-                        'updated_at' => $now,
-                        'updated_by' => $request->input('updatedBy'),
-                    );
+                        $saldoFirts =  $dataDeposit->first()->saldo;
+                        $totalBayar = $request->input('total');
+                        $finalSaldo = $saldoFirts - $totalBayar;
 
-                    $dataDepositTransaction = array(
-                        'transaction_code' => $transactionCode,
-                        'debet' => $totalBayar,
-                        'kredit' => 0,
-                        'transaction_date' => $now,
-                        'created_by' => $request->input('updatedBy'),
-                        'type' => '0',
-                        'deposit_id' => $dataDeposit->first()->depositId,
-                        'transaction_id' => $request->input('transactionId')
+                        $dataDepositForUpdate = array(            
+                            'saldo'  => $finalSaldo,
+                            'previous_saldo' => $dataDeposit->first()->saldo,         
+                            'updated_at' => $now,
+                            'updated_by' => $request->input('updatedBy'),
+                        );
 
-                    );
+                        $dataDepositTransaction = array(
+                            'transaction_code' => $transactionCode,
+                            'debet' => $totalBayar,
+                            'kredit' => 0,
+                            'transaction_date' => $now,
+                            'created_by' => $request->input('updatedBy'),
+                            'type' => '0',
+                            'deposit_id' => $dataDeposit->first()->depositId,
+                            'transaction_id' => $request->input('transactionId')
 
-                    if($saldoFirts >= $totalBayar)
-                    {
+                        );
+
+                        if($saldoFirts >= $totalBayar)
+                        {
                         //insert and update data transaksi
-                        $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+                            $debit = Deposit::debetOrKredit($dataDeposit->first()->depositId, $dataDepositForUpdate, $dataDepositTransaction);
 
-                        $code = $debit ? 200 : 400;
+                            $code = $debit ? 200 : 400;
 
                         // Total bayar Rp 17.500, sisa saldo anda adalah Rp 15.0000
-       
 
-                        $ressMessage = $code == 200 ? "Total bayar Rp ". $totalBayar .", sisa saldo anda adalah Rp ". $finalSaldo : "bad request";
 
-                        $ress = Response::responseWithMessage($code, $ressMessage);
+                            $ressMessage = $code == 200 ? "Total bayar Rp ". $totalBayar .", sisa saldo anda adalah Rp ". $finalSaldo : "bad request";
 
-                        return $ress;
+                            $ress = Response::responseWithMessage($code, $ressMessage);
+
+
+
+                        }else{
+                            $ress = Response::responseWithMessage(400,"saldo Tidak mencukupi");
+
+                        }
 
                     }else{
-                        $ress = Response::responseWithMessage(400,"saldo Tidak mencukupi");
-                        return $ress;
-                    }
+                        $ress = Response::responseWithMessage(400,"data Deposit User Tidak ditemukan");                    
 
+                    }
                 }else{
-                    $ress = Response::responseWithMessage(400,"data Deposit User Tidak ditemukan");
-                    return $ress;
+                    $ress = Response::responseWithMessage(400,"data User Is Delete");                    
 
                 }
             }else{
                $ress = Response::responseWithMessage(400,"pin salah");
-               return $ress;
+
            }
 
 
        } catch (Exception $e) {
         return $e;
     }
+
+    return $ress;
 
 }
 
@@ -469,48 +474,53 @@ public function kredit(Request $request, $userId){
 
         $dataDepositUser = Deposit::findByUserId($id)->first();
 
-        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;        
+        
 
         if(!empty($dataUser) && !empty($dataDepositUser)){
+            if(empty($dataUser->isDelete)){
 
-            $totalSaldo = $dataDepositUser->saldo - $saldoPull;            
+                $totalSaldo = $dataDepositUser->saldo - $saldoPull;            
 
-            if($totalSaldo >= 0){                
+                if($totalSaldo >= 0){                
 
-                $dataDepositForUpdate = array(            
-                    'saldo'  => $totalSaldo,
-                    'previous_saldo' => $dataDepositUser->saldo,         
-                    'updated_at' => $now,
-                    'updated_by' => $dataAdmin,
-                );
+                    $dataDepositForUpdate = array(            
+                        'saldo'  => $totalSaldo,
+                        'previous_saldo' => $dataDepositUser->saldo,         
+                        'updated_at' => $now,
+                        'updated_by' => $dataAdmin,
+                    );
 
 
-                $dataDepositTransaction = array(
-                    "transaction_code" => $transactionCode,
-                    "debet" => $saldoPull,
-                    "kredit" => 0,
-                    "transaction_date" => $now,
-                    "type" => 2,
-                    "deposit_id" => $dataDepositUser->depositId,
-                    "created_by" => $dataAdmin,
-                    "transaction_id" => null,
-                );
+                    $dataDepositTransaction = array(
+                        "transaction_code" => $transactionCode,
+                        "debet" => $saldoPull,
+                        "kredit" => 0,
+                        "transaction_date" => $now,
+                        "type" => 2,
+                        "deposit_id" => $dataDepositUser->depositId,
+                        "created_by" => $dataAdmin,
+                        "transaction_id" => null,
+                    );
 
-                $dataWithDrawl = Deposit::debetOrKredit($dataDepositUser->depositId, $dataDepositForUpdate, $dataDepositTransaction);
+                    $dataWithDrawl = Deposit::debetOrKredit($dataDepositUser->depositId, $dataDepositForUpdate, $dataDepositTransaction);
 
-                $code = $dataWithDrawl ? 200 : 400;       
+                    $code = $dataWithDrawl ? 200 : 400;       
 
-                $message = $code == 200 ? "Total Pengambilan Rp ". $saldoPull .", sisa saldo anda adalah Rp ". $totalSaldo : "bad request";
+                    $message = $code == 200 ? "Total Pengambilan Rp ". $saldoPull .", sisa saldo anda adalah Rp ". $totalSaldo : "bad request";
 
-                $ress = Response::responseWithMessage($code, $message);
+                    $ress = Response::responseWithMessage($code, $message);
 
                 // return $ress;
 
+                }else{
+                    $message = "saldo tidak mencukupi, total saldo anda = " . $dataDepositUser->saldo;
+                    $ress = Response::responseWithMessage($code, $message);
+                }
             }else{
-                $message = "saldo tidak mencukupi, total saldo anda = " . $dataDepositUser->saldo;
-                $ress = Response::responseWithMessage($code, $message);
+                $message = "user Data Deleted";
+                $ress = Response::responseWithMessage($code, $message);    
             }
-
         }else{
             $message = "user not found";
             $ress = Response::responseWithMessage($code, $message);
@@ -525,7 +535,7 @@ public function kredit(Request $request, $userId){
 
         $data = DepositTransaction::getAllKreditFindByTrxCOde($limit, $trxCode);
 
-        
+
         $buildData = $this->buildDataDebitOrKreditAll($data);
 
         $dataPagination = array([
@@ -537,7 +547,7 @@ public function kredit(Request $request, $userId){
             "next_page_url" => $data->nextPageUrl(),
             "prev_page_url" => $data->previousPageUrl()
         ]);
-        
+
         // $ress = Response::response(200, $buildData);
         $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
         return $ress;
@@ -549,7 +559,7 @@ public function kredit(Request $request, $userId){
         $nis = $request->input('nis');
         $data = DepositTransaction::getDebitByNisOrTransactionCode($limit, $nis, $trxCode);
         // return $data;
-        
+
         $buildData = $this->buildDataDebitOrKreditAll($data);
 
         $dataPagination = array([
@@ -561,11 +571,11 @@ public function kredit(Request $request, $userId){
             "next_page_url" => $data->nextPageUrl(),
             "prev_page_url" => $data->previousPageUrl()
         ]);
-        
-        
+
+
         $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
         return $ress;
     }
 
-    
+
 }

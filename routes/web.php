@@ -22,6 +22,8 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	$router->get('user/search', 'UserController@userFindByNameAndClass');
 	$router->post('user/add', [ 'uses' =>'UserController@insert']);
 	$router->put('user/update/{id}', [ 'uses' =>'UserController@updateData']);
+	$router->delete('user/delete/{id}', [ 'uses' =>'UserController@deletById']);
+	$router->post('user/active/{id}', [ 'uses' =>'UserController@activedById']);
 
 
 	$router->get('administrator/all', [ 'uses' =>'AdministratorController@findAll']);

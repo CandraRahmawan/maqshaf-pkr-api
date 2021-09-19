@@ -33,13 +33,14 @@ class UserController extends Controller
                 [
                     'userId' => $value->userId, 
                     'nis' => $value->nis,
-                    'fullName' => (int)$value->fullName,
+                    'fullName' => $value->fullName,
                     'class' =>  (int)$value->class,
                     'address' => $value->address,
                     'createdAt' => $value->createdAt,
                     'createdBy' => $value->createdBy,
                     'updatedAt' => $value->updatedAt, 
-                    'updatedBy' => $value->updatedBy
+                    'updatedBy' => $value->updatedBy,
+                    'isDelete' => $value->isDelete
 
                 ]
             );
@@ -54,7 +55,7 @@ class UserController extends Controller
             "last_page" => $data->lastPage(),
             "next_page_url" => $data->nextPageUrl(),
             "prev_page_url" => $data->previousPageUrl()
-        ]);        
+        ]);
         
         $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
         
@@ -193,7 +194,7 @@ class UserController extends Controller
                 $message = "Siswa Tidak ditemukan";
                 return Response::responseWithMessage(400, $message);
             }     
-        
+
         }else if(!empty($userId)){
             $dataUser = User::findById($userId);
 
@@ -240,6 +241,7 @@ class UserController extends Controller
     }
 
     public function resetPin(Request $request, $id){
+
         $data = array(
             'pin' => sha1('111111'),          
             'updated_by' => $request->input('updatedBy'),
@@ -258,6 +260,61 @@ class UserController extends Controller
 
         return Response::responseWithMessage($code, $message);
         
+    }
+
+    public function deletById(Request $request, $id){
+
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
+        $data = array(
+            'is_delete' => 'YES',
+            'updated_by' => $dataAdmin,
+            'updated_at' => $now = date('Y-m-d H:i:s')
+        );
+        
+        try {
+            $update = User::updateData($id, $data);
+
+            if($update){
+                $code = 200;
+                $message = "delete user success";
+            }else{
+                $code = 400;
+                $message = "delete user failed";
+            }
+
+        } catch (Exception $e) {
+            return $e;
+
+        }
+        return Response::responseWithMessage($code, $message);
+    }
+
+    public function activedById(Request $request, $id){
+        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+
+        $data = array(
+            'is_delete' => null,
+            'updated_by' => $dataAdmin,
+            'updated_at' => $now = date('Y-m-d H:i:s')
+        );
+        
+        try {
+            $update = User::updateData($id, $data);
+
+            if($update){
+                $code = 200;
+                $message = "active user success";
+            }else{
+                $code = 400;
+                $message = "active user failed";
+            }
+
+        } catch (Exception $e) {
+            return $e;
+
+        }
+        return Response::responseWithMessage($code, $message);
     }
 
 }

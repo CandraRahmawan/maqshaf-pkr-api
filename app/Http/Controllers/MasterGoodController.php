@@ -235,13 +235,14 @@ class MasterGoodController extends Controller
         $buildData = [];
 
         $nameInput = $request->input('name');
+        $limit = $request->input('limit');
 
 
         if(strlen($nameInput) != 0){
-            $data = MasterGoods::findByName($nameInput);
+            $data = MasterGoods::findByName($nameInput, $limit);
             
         }else{
-            $data = MasterGoods::findAll();            
+            $data = MasterGoods::findAll($limit);            
         }
 
         foreach ($data as $value) {
@@ -264,8 +265,19 @@ class MasterGoodController extends Controller
                 );
             }
 
+            $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
 
-        $ress = Response::response(200, $buildData, $data->count());
+
+        // $ress = Response::response(200, $buildData, $data->count());
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
 
         return $ress;
     }
