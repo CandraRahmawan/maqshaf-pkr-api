@@ -40,7 +40,9 @@ class UserController extends Controller
                     'createdBy' => $value->createdBy,
                     'updatedAt' => $value->updatedAt, 
                     'updatedBy' => $value->updatedBy,
-                    'isDelete' => $value->isDelete
+                    'isDelete' => $value->isDelete,
+                    'deletedAt' => $value->deletedAt,
+                    'deletedBy' => $value->deletedBy
 
                 ]
             );
@@ -78,15 +80,18 @@ class UserController extends Controller
     }
 
     public function insert(Request $request){
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
+        $now = date('Y-m-d H:i:s');
+        
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
         $data = array(
             'nis' => $request->input('nis'),
             'full_name'  => $request->input('fullName'),
             'class'  => $request->input('class'),
-            'address' => $request->input('address'),
-            // 'pin' => sha1($request->input('pin')),
+            'address' => $request->input('address'),            
             'pin' => sha1(111111),
             'created_by' => $dataAdmin,
+            'created_at' => $now
         );
 
         $save = User::insert($data);
@@ -107,6 +112,7 @@ class UserController extends Controller
     }
 
     public function updateData(Request $request, $id){
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(
@@ -115,6 +121,7 @@ class UserController extends Controller
             'class'  => $request->input('class'),
             'address' => $request->input('address'),            
             'updated_by' => $dataAdmin,
+            'updated_at' => date('Y-m-d H:i:s')
         );
 
         $update = User::updateData($id, $data);
@@ -134,10 +141,12 @@ class UserController extends Controller
     }
 
     public function updatePin(Request $request, $id){
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
+
         $data = array(
             'pin' => sha1($request->input('pin')),          
             'updated_by' => $request->input('updatedBy'),
-            'updated_at' => $now = date('Y-m-d H:i:s')
+            'updated_at' => date('Y-m-d H:i:s')
         );
         $pinOld = sha1($request->input('oldPin'));
         $update = User::updatePin($id, $pinOld, $data);        
@@ -241,11 +250,11 @@ class UserController extends Controller
     }
 
     public function resetPin(Request $request, $id){
-
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $data = array(
             'pin' => sha1('111111'),          
             'updated_by' => $request->input('updatedBy'),
-            'updated_at' => $now = date('Y-m-d H:i:s')
+            'updated_at' => date('Y-m-d H:i:s')
         );
         
         $update = User::updateData($id, $data);
@@ -263,13 +272,13 @@ class UserController extends Controller
     }
 
     public function deletById(Request $request, $id){
-
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(
             'is_delete' => 'YES',
-            'updated_by' => $dataAdmin,
-            'updated_at' => $now = date('Y-m-d H:i:s')
+            'deleted_by' => $dataAdmin,
+            'deleted_at' => date('Y-m-d H:i:s')
         );
         
         try {
@@ -291,12 +300,13 @@ class UserController extends Controller
     }
 
     public function activedById(Request $request, $id){
+        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
         $data = array(
             'is_delete' => null,
             'updated_by' => $dataAdmin,
-            'updated_at' => $now = date('Y-m-d H:i:s')
+            'updated_at' => date('Y-m-d H:i:s')
         );
         
         try {
