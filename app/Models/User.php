@@ -19,14 +19,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public $timestamps = false;
 
     public static function findAll($limit=5){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete')
         ->paginate($limit);
 
         return $results;
     }
 
     public static function findById($id){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete')
         ->where('user_id', $id)
         ->get();
 
@@ -34,7 +34,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     public static function findByIdAndPin($id, $pin){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete')
         ->where('user_id', $id)
         ->where('pin', $pin)
         ->get();
@@ -91,7 +91,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     public static function findByNameAndClass($name, $class){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete')
         ->where('full_name', 'like', '%' . $name . '%')
         ->where('class', $class)
         ->get();
@@ -101,7 +101,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     public static function findByNis($nis){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')        
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete')
         ->where('nis', $nis)
         ->get();
 
