@@ -410,7 +410,7 @@ public function kredit(Request $request, $userId){
         $data = DepositTransaction::getAllDebit($limit);
         // return $data;
         
-        $buildData = $this->buildDataDebitOrKreditAll($data);
+        $buildData = $this->buildDataDebitOrKreditAll($data, true);
 
         $dataPagination = array([
             "total" => $data->total(),
@@ -427,7 +427,7 @@ public function kredit(Request $request, $userId){
         return $ress;
     }
 
-    public function buildDataDebitOrKreditAll($data){
+    public function buildDataDebitOrKreditAll($data, $debet = false){
 
         $buildData = [];
 
@@ -449,7 +449,8 @@ public function kredit(Request $request, $userId){
                     "nis" => $value->nis ? $value->nis : null,
                     "fullName" => $value->full_name ? $value->full_name : null,
                     "class" => $value->class ? $value->class : null,
-                    "address" => $value->address ? $value->address : null
+                    "address" => $value->address ? $value->address : null,
+                    "listItem" => $debet ? TransactionItem::findByTransactionId($value->transaction_id) : []
 
                 ]
             );
@@ -560,7 +561,7 @@ public function kredit(Request $request, $userId){
         $data = DepositTransaction::getDebitByNisOrTransactionCode($limit, $nis, $trxCode);
         // return $data;
 
-        $buildData = $this->buildDataDebitOrKreditAll($data);
+        $buildData = $this->buildDataDebitOrKreditAll($data, true);
 
         $dataPagination = array([
             "total" => $data->total(),

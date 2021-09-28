@@ -62,5 +62,21 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
         return response($response, $code);
     }
 
+    public static function buildPagination($data){
+
+        $dataPagination = array([
+            "total" => $data->total(),
+            "data_in_this_page" => $data->count(),
+            "data_per_page" => $data->perPage(),
+            "current_page" => $data->currentPage(),
+            "last_page" => $data->lastPage(),
+            "next_page_url" => $data->nextPageUrl(),
+            "prev_page_url" => $data->previousPageUrl()
+        ]);
+
+        return $dataPagination;
+
+    }
+
 
 }

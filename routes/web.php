@@ -19,7 +19,7 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($router) {
 	$router->get('user/all', 'UserController@findAll');
-	$router->get('user/search', 'UserController@userFindByNameAndClass');
+	$router->get('user/search', 'UserController@findNameOrNis');
 	$router->post('user/add', [ 'uses' =>'UserController@insert']);
 	$router->put('user/update/{id}', [ 'uses' =>'UserController@updateData']);
 	$router->delete('user/delete/{id}', [ 'uses' =>'UserController@deletById']);

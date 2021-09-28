@@ -94,18 +94,28 @@ class UserController extends Controller
             'created_at' => $now
         );
 
-        $save = User::insert($data);
-        // return $save->first();
-        if($save){
-            $code = 200;
-            $message = "update data success";
-
-        }else{
+        $dataUser = User::findByNis($request->input('nis'));
+        
+        
+        if(!empty($dataUser->first())){
             $code = 400;
-            $message = "update data failed";
+            $message = "nis sudah terpakai";
+            $save = $dataUser->first();
+
+        }else{  
+            $save = User::insert($data);
+            if($save){
+                $code = 200;
+                $message = "tambah data berhasil";
+
+            }else{
+                $code = 400;
+                $message = "tambah data gagal";
+            }            
         }
 
-        $ress = Response::responseWithMessage($code, $save);
+        $ress = Response::responseWithMessage($code, $message, $save);
+        
 
         return $ress;
 
@@ -124,20 +134,32 @@ class UserController extends Controller
             'updated_at' => date('Y-m-d H:i:s')
         );
 
-        $update = User::updateData($id, $data);
-        // $ress = $update ? "success" : "failed";
+        $dataUser = User::findByNis($request->input('nis'));
+        $originalDataUser = User::findById($id);
 
-        if($update){
-            $code = 200;
-            $message = "update data success";
+        
+        if(($originalDataUser->first() == $dataUser->first())){
+            
+            try {
+                $update = User::updateData($id, $data);
+                $code = 200;
+                $message = "ubah data berhasil";
+            } catch (Exception $e) {
+                $code = 400;
+                $message = "ubah data gagal";
+                $update = null;
+            }
+
         }else{
             $code = 400;
-            $message = "update data failed";
-        }
+            $message = "nis sudah terpakai";
+            $update = $dataUser->first();
 
+
+        }
         return Response::responseWithMessage($code, $message);
 
-        // return $ress;
+        
     }
 
     public function updatePin(Request $request, $id){
@@ -153,10 +175,10 @@ class UserController extends Controller
 
         if($update){
             $code = 200;
-            $message = "update pin success";
+            $message = "ubah pin berhasil";
         }else{
             $code = 400;
-            $message = "update pin failed";
+            $message = "ubah pin gagal";
         }
 
         return Response::responseWithMessage($code, $message);
@@ -216,7 +238,7 @@ class UserController extends Controller
                 return Response::responseWithMessage(400, $message);
             }
         }else{
-            $message = "nis and idUser cannot be null";
+            $message = "nis and idUser tidak boleh kosong";
             return Response::responseWithMessage(400, $message);
             
         }
@@ -261,10 +283,10 @@ class UserController extends Controller
 
         if($update){
             $code = 200;
-            $message = "reset pin success";
+            $message = "reset pin berhasil";
         }else{
             $code = 400;
-            $message = "reset pin failed";
+            $message = "reset pin gagal";
         }
 
         return Response::responseWithMessage($code, $message);
@@ -286,10 +308,10 @@ class UserController extends Controller
 
             if($update){
                 $code = 200;
-                $message = "delete user success";
+                $message = "hapus user berhasil";
             }else{
                 $code = 400;
-                $message = "delete user failed";
+                $message = "hapus user gagal";
             }
 
         } catch (Exception $e) {
@@ -314,10 +336,10 @@ class UserController extends Controller
 
             if($update){
                 $code = 200;
-                $message = "active user success";
+                $message = "active user berhasil";
             }else{
                 $code = 400;
-                $message = "active user failed";
+                $message = "active user gagal";
             }
 
         } catch (Exception $e) {
@@ -326,5 +348,42 @@ class UserController extends Controller
         }
         return Response::responseWithMessage($code, $message);
     }
+
+    public function findNameOrNis(Request $request){
+        $name = $request->input('name');
+        $nis = $request->input('nis');
+        $limit = $request->input('limit');        
+        $buildData = [];
+
+        $data = User::findByNameAndNis($limit, $name, $nis);       
+
+        foreach ($data as $value) {
+            array_push($buildData, 
+                [
+                    'userId' => $value->userId, 
+                    'nis' => $value->nis,
+                    'fullName' => $value->fullName,
+                    'class' =>  (int)$value->class,
+                    'address' => $value->address,
+                    'createdAt' => $value->createdAt,
+                    'createdBy' => $value->createdBy,
+                    'updatedAt' => $value->updatedAt, 
+                    'updatedBy' => $value->updatedBy,
+                    'isDelete' => $value->isDelete,
+                    'deletedAt' => $value->deletedAt,
+                    'deletedBy' => $value->deletedBy
+
+                ]
+            );
+        }
+
+
+        $dataPagination = Response::buildPagination($data);
+
+        $ress = Response::responseWithPage(200, $buildData, $dataPagination[0]);
+
+        return $ress;
+    }
+    
 
 }
