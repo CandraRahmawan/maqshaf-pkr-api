@@ -34,7 +34,7 @@ class AdministratorController extends Controller
                 [
                     'administratorId' => $value->administratorId, 
                     'fullName' => $value->fullName,
-                    'username' => (int)$value->username,
+                    'username' => $value->username,
                     'token' => $value->token,                    
                     'createdAt' => $value->createdAt,
                     'createdBy' => $value->createdBy,
@@ -158,7 +158,7 @@ class AdministratorController extends Controller
                 $ress = Response::response($code, $dataLogin);
             }else{
                 $code = 400;
-                $message = "failed update token";
+                $message = "gagal ubah token";
                 $ress = Response::responseWithMessage($code, $message);    
             }            
 
@@ -208,7 +208,7 @@ class AdministratorController extends Controller
 
         }else{
             $code = 400;
-            $message = "failed logout";
+            $message = "gagal logout";
             $ress = Response::responseWithMessage($code, $message);
         }
 

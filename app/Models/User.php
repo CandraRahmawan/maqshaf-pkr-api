@@ -21,6 +21,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public static function findAll($limit=5){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
         ->paginate($limit);
 
         return $results;
@@ -28,6 +29,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public static function findById($id){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
         ->where('user_id', $id)
         ->get();
 
@@ -62,11 +64,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
 
     public static function updateData($id, $data){
-        $user = User::where('user_id', $id)        
-        ->update($data);        
+        try {
+            $user = User::where('user_id', $id)        
+            ->update($data);            
+        } catch (Exception $e) {
+            $user = null;
+        }
 
         return $user;
-
     }
 
     public static function updatePin($id, $pinOld, $data){
@@ -93,6 +98,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public static function findByNameAndClass($name, $class){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
         ->where('full_name', 'like', '%' . $name . '%')
         ->where('class', $class)
         ->get();
@@ -103,8 +109,40 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public static function findByNis($nis){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
         ->where('nis', $nis)
         ->get();
+
+        return $results;
+
+    }
+
+    public static function findByNameAndNis($limit, $name, $nis){
+
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')        
+        ->where('nis', 'like', '%'. $nis . '%')
+        ->where('full_name','like', '%' . $name . '%')        
+        ->where('is_delete', null)
+        ->paginate($limit);        
+
+        return $results;
+    }
+
+    public static function findByName($limit, $name){
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
+        ->where('full_name', 'like', '%' . $name . '%')
+        ->paginate($limit);
+
+        return $results;
+
+    }
+
+    public static function findByNisPaging($limit, $nis){
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        ->where('is_delete', null)
+        ->where('nis', $nis)
+        ->paginate($limit);
 
         return $results;
 
