@@ -79,36 +79,55 @@ class AdministratorController extends Controller
     public function insert(Request $request){
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
-        $data = array(            
+        $validateDataAdmin = Administrator::findByUsername($request->input('username'))->first();
+        
+        if(empty($validateDataAdmin)){
+           $data = array(            
             'full_name'  => $request->input('fullName'),            
             'password' => sha1($request->input('password')),
             'username'  => $request->input('username'),
             'created_by' => $dataAdmin
         );
 
-        $save = Administrator::insert($data);
-        
-        $ress = Response::response(200, $save);
+           $save = Administrator::insert($data);
 
-        return $ress;
+           $ress = Response::response(200, $save); 
+       }else{
+        $code = 400;
+        $message = "username sudah dipakai";
+        $ress = Response::responseWithMessage($code, $message);    
 
     }
 
-    public function updateData(Request $request, $id){        
+
+    return $ress;
+
+}
+
+public function updateData(Request $request, $id){        
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
+        $validateDataAdmin = Administrator::findByUsername($request->input('username'))->first();
 
-        $data = array(
-            'full_name'  => $request->input('fullName'),            
-            'username'  => $request->input('username'),         
-            'updated_by' => $dataAdmin,
-            'updated_at' => $now
-        );
+        if(empty($validateDataAdmin)){
+            $data = array(
+                'full_name'  => $request->input('fullName'),            
+                'username'  => $request->input('username'),         
+                'updated_by' => $dataAdmin,
+                'updated_at' => $now
+            );
 
-        $update = Administrator::updateData($id, $data);
-        $code = $update ? 200 : 400;
-        $ress = Response::response($code);
+            $update = Administrator::updateData($id, $data);
+            $code = $update ? 200 : 400;
+            $ress = Response::response($code);
+        }else{
+            $code = 400;
+            $message = "username sudah dipakai";
+            $ress = Response::responseWithMessage($code, $message);    
+
+
+        }        
 
         return $ress;
     }
@@ -136,39 +155,44 @@ class AdministratorController extends Controller
 
     //belum memakai JWT
     public function login(Request $request){
-        
-            $username = $request->input('username');
-            $password = sha1($request->input('password'));
+
+        $username = $request->input('username');
+        $password = sha1($request->input('password'));
         
         
         $login = Administrator::findByUsernameAndPassword($username, $password)->first();
+        // return $login;
+        if(!empty($login)){
+            if(null == $login->deletedAt ){
+                $token = Str::random(40);
 
-        if(!empty($login) && $login->deletedAt == null){
-            $token = Str::random(40);
+                $data = array(
+                    'token' => $token
+                );
 
-            $data = array(
-                'token' => $token
-            );
+                $update = Administrator::updateData($login->administratorId, $data);
 
-            $update = Administrator::updateData($login->administratorId, $data);
+                if($update){
+                    $dataLogin = Administrator::findById($login->administratorId)->first();
+                    $code = 200;
+                    $ress = Response::response($code, $dataLogin);
+                }else{
+                    $code = 400;
+                    $message = "gagal ubah token";
+                    $ress = Response::responseWithMessage($code, $message);    
+                }            
 
-            if($update){
-                $dataLogin = Administrator::findById($login->administratorId)->first();
-                $code = 200;
-                $ress = Response::response($code, $dataLogin);
             }else{
                 $code = 400;
-                $message = "gagal ubah token";
-                $ress = Response::responseWithMessage($code, $message);    
-            }            
+                $message = "Admin Telah Dihapus";
+                $ress = Response::responseWithMessage($code, $message);
+            }
 
         }else{
-            $code = 400;
+            $code = 400;            
             $message = "pasword salah";
             $ress = Response::responseWithMessage($code, $message);
-        }
-        
-        
+        }        
 
         return $ress;
     }
@@ -196,14 +220,14 @@ class AdministratorController extends Controller
         $administratorId = $request->input('administratorId');
 
         $data = array(
-                'token' => null
-            );
+            'token' => null
+        );
 
         $update = Administrator::updateData($administratorId, $data);
 
         if($update){            
             $code = 200;
-            $message = "logout success";
+            $message = "logout berhasil";
             $ress = Response::responseWithMessage($code, $message);
 
         }else{

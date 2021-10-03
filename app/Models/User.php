@@ -22,6 +22,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public static function findAll($limit=5){
         $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
         ->where('is_delete', null)
+        ->orderBy('user_id', 'DESC')
         ->paginate($limit);
 
         return $results;
