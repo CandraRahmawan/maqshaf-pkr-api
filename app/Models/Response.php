@@ -18,7 +18,7 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
     public static function response($code, $data = [], $countData = 0){           
         $response = [
             "code" => $code,
-            "message" => $code == 200 ? "Success" : "Bad Request",
+            "message" => $code == 200 ? "Berhasil" : "Bad Request",
             "countData" => $countData,
             "data" => $code == 200 ? $data : [],
         ]; 
@@ -30,7 +30,7 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
     public static function responseWithPage($code, $data = [], $pageSummary){
         $response = [
             "code" => $code, 
-            "message" => $code == 200 ? "Success" : "Bad Request", 
+            "message" => $code == 200 ? "Berhasil" : "Bad Request", 
             "data" => $code == 200 ? $data : [], 
             "pageSummary" => $pageSummary
         ]; 
@@ -54,7 +54,7 @@ class Response extends Model implements AuthenticatableContract, AuthorizableCon
     public static function responseWithoutArray($code, $data = null){           
         $response = [
             "code" => $code, 
-            "message" => $code == 200 ? "Success" : "Bad Request", 
+            "message" => $code == 200 ? "Berhasil" : "Bad Request", 
             "data" => $code == 200 ? $data[0] : null,
         ]; 
 

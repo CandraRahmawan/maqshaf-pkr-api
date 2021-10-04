@@ -197,18 +197,9 @@ public function updateData(Request $request, $id){
         return $ress;
     }
 
-    public function deleteDataById(Request $request, $id) {
+    public function deleteDataById(Request $request, $id) {        
 
-        date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
-        $now = date('Y-m-d H:i:s');
-        $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
-
-        $data = array(                   
-            'delete_by' => $dataAdmin,
-            'delete_at' => $now
-        );
-
-        $delete = Administrator::updateData($id, $data);
+        $delete = Administrator::deleteData($id);
         $code = $delete ? 200 : 400;
         $ress = Response::response($code);
 

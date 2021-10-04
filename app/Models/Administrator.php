@@ -117,5 +117,11 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
 
         return $result;
     }
+
+    public static function deleteData($id){
+        $admin = Administrator::where('administrator_id',$id)->delete();
+
+        return $admin;
+    }
    
 }
