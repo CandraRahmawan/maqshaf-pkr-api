@@ -82,17 +82,17 @@ class AdministratorController extends Controller
         $validateDataAdmin = Administrator::findByUsername($request->input('username'))->first();
         
         if(empty($validateDataAdmin)){
-           $data = array(            
+         $data = array(            
             'full_name'  => $request->input('fullName'),            
             'password' => sha1($request->input('password')),
             'username'  => $request->input('username'),
             'created_by' => $dataAdmin
         );
 
-           $save = Administrator::insert($data);
+         $save = Administrator::insert($data);
 
-           $ress = Response::response(200, $save); 
-       }else{
+         $ress = Response::response(200, $save); 
+     }else{
         $code = 400;
         $message = "username sudah dipakai";
         $ress = Response::responseWithMessage($code, $message);    
@@ -163,30 +163,24 @@ public function updateData(Request $request, $id){
         $login = Administrator::findByUsernameAndPassword($username, $password)->first();
         // return $login;
         if(!empty($login)){
-            if(null == $login->deletedAt ){
-                $token = Str::random(40);
 
-                $data = array(
-                    'token' => $token
-                );
+            $token = Str::random(40);
 
-                $update = Administrator::updateData($login->administratorId, $data);
+            $data = array(
+                'token' => $token
+            );
 
-                if($update){
-                    $dataLogin = Administrator::findById($login->administratorId)->first();
-                    $code = 200;
-                    $ress = Response::response($code, $dataLogin);
-                }else{
-                    $code = 400;
-                    $message = "gagal ubah token";
-                    $ress = Response::responseWithMessage($code, $message);    
-                }            
+            $update = Administrator::updateData($login->administratorId, $data);
 
+            if($update){
+                $dataLogin = Administrator::findById($login->administratorId)->first();
+                $code = 200;
+                $ress = Response::response($code, $dataLogin);
             }else{
                 $code = 400;
-                $message = "Admin Telah Dihapus";
-                $ress = Response::responseWithMessage($code, $message);
-            }
+                $message = "gagal ubah token";
+                $ress = Response::responseWithMessage($code, $message);    
+            }            
 
         }else{
             $code = 400;            

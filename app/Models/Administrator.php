@@ -22,9 +22,9 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
 
     public static function getAll($limit){
 
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deleteAt', 'delete_by as deleteBy', 'token')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'token')
 
-        ->where('delete_at',null)
+        
         ->orderBy('administrator_id', 'desc')
         ->paginate($limit);
 
@@ -32,7 +32,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     }
 
     public static function findById($id){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'token')
         ->where('administrator_id', $id)
         ->get();
 
@@ -94,7 +94,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     }
 
     public static function findByUsernameAndPassword($username, $password){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'token')
         ->where('username', $username)
         ->where('password', $password)
         ->get();
@@ -103,7 +103,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     }
 
     public static function findByToken($token){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'token')
         ->where('token', $token)        
         ->get();
 
@@ -111,7 +111,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
     }
 
     public static function findByUsername($username){
-        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'delete_at as deletedAt', 'delete_by as deletedBy', 'token')
+        $result = Administrator::select('administrator_id as administratorId', 'full_name as fullName', 'username', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'token')
         ->where('username', $username)        
         ->get();
 
