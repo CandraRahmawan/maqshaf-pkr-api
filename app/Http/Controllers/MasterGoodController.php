@@ -240,7 +240,7 @@ class MasterGoodController extends Controller
             $data = MasterGoods::findByName($nameInput, $limit);
             
         }else{
-            $data = MasterGoods::findAll($limit);            
+            $data = MasterGoods::getAll($limit);
         }
 
         foreach ($data as $value) {
