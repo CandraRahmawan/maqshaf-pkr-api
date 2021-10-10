@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\Models\Transactions;
 use App\Models\TransactionItem;
+use App\Models\User;
+use App\Models\DepositTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
@@ -90,6 +92,26 @@ class TransactionsController extends Controller
         $ress = Response::response($code);
 
         return $ress;
+
+    }
+
+    public function dashboard(Request $request){
+        $year = $request->input('year');
+        $month = $request->input('month');
+
+        $totalSantri = User::findAll();
+        $totalDeposit = DepositTransaction::getAllKredit(1, $year, $month);
+        $totalTransaksi = DepositTransaction::getAllDebit(1, $year, $month);
+
+        $data = array(
+            "totalSantriActive" => $totalSantri->total(),
+            "totalDeposit" => $totalDeposit->total(),
+            "totalTransaksi" => $totalTransaksi->total(),
+            "bulan" => $month,
+            "tahun" => $year
+        );
+
+        return Response::responseWithMessage(200, 'berhasil', $data);
 
     }
 

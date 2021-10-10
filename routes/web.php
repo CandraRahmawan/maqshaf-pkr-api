@@ -52,6 +52,8 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 
 	$router->post('withDrawl/{id}', [ 'uses' =>'DepositController@withDrawl']);
 
+	$router->get('transactions/dashboard', [ 'uses' =>'TransactionsController@dashboard']);
+
 });
 
 

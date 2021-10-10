@@ -297,27 +297,36 @@ class UserController extends Controller
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
 
-        $data = array(
-            'is_delete' => 'YES',
-            'deleted_by' => $dataAdmin,
-            'deleted_at' => date('Y-m-d H:i:s')
-        );
+        $cekSaldoUser = Deposit::findByUserId($id)->first();
         
-        try {
-            $update = User::updateData($id, $data);
 
-            if($update){
-                $code = 200;
-                $message = "hapus user berhasil";
-            }else{
-                $code = 400;
-                $message = "hapus user gagal";
+        if(empty($cekSaldoUser) || $cekSaldoUser->saldo < 0){
+            $data = array(
+                'is_delete' => 'YES',
+                'deleted_by' => $dataAdmin,
+                'deleted_at' => date('Y-m-d H:i:s')
+            );
+
+            try {
+                $update = User::updateData($id, $data);
+
+                if($update){
+                    $code = 200;
+                    $message = "hapus user berhasil";
+                }else{
+                    $code = 400;
+                    $message = "hapus user gagal";
+                }
+
+            } catch (Exception $e) {
+                return $e;
+
             }
 
-        } catch (Exception $e) {
-            return $e;
-
+        }else{
+            return Response::responseWithMessage(200, "user mempunyai saldo", $cekSaldoUser);
         }
+        
         return Response::responseWithMessage($code, $message);
     }
 

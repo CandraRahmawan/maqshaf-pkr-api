@@ -355,7 +355,7 @@ public function kredit(Request $request, $userId){
             if($saldoFirts >= $totalBayar){
 
                 $result = array(
-                    "message" => "success",
+                    "message" => "berhasil",
                     "result" => true,
                     "saldo" => (int)$saldoFirts,
                     "totalBayar" => (int)$totalBayar
@@ -386,7 +386,10 @@ public function kredit(Request $request, $userId){
 
     public function findByAllKredit(Request $request){
         $limit = $request->input('limit');
-        $data = DepositTransaction::getAllKredit($limit);
+        $year = $request->input('year');
+        $month = $request->input('month');
+
+        $data = DepositTransaction::getAllKredit($limit, $year, $month);
         
         $buildData = $this->buildDataDebitOrKreditAll($data);
 
@@ -407,7 +410,9 @@ public function kredit(Request $request, $userId){
 
     public function findByAllDebet(Request $request){
         $limit = $request->input('limit');
-        $data = DepositTransaction::getAllDebit($limit);
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $data = DepositTransaction::getAllDebit($limit,  $year, $month);
         // return $data;
         
         $buildData = $this->buildDataDebitOrKreditAll($data, true);

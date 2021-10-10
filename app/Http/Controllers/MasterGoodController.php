@@ -22,7 +22,12 @@ class MasterGoodController extends Controller
 
     public function findAll(Request $request){        
         $limit = $request->input('limit');
-        $data = MasterGoods::getAll($limit);
+        $name = $request->input('name');
+        $category = $request->input('category');
+        $status = $request->input('status');
+        
+        $data = MasterGoods::findNameCategoryStatus($name, $category, $status, $limit);
+        // $data = MasterGoods::getAll($limit);
 
         $buildData = [];
 
