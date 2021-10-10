@@ -109,8 +109,11 @@ public function updateData(Request $request, $id){
         $now = date('Y-m-d H:i:s');
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
         $validateDataAdmin = Administrator::findByUsername($request->input('username'))->first();
+        $originalData = Administrator::findById($id)->first();
 
-        if(empty($validateDataAdmin)){
+        // return $originalData->username;
+
+        if(empty($validateDataAdmin) || $originalData->username == $request->input('username')){
             $data = array(
                 'full_name'  => $request->input('fullName'),            
                 'username'  => $request->input('username'),         

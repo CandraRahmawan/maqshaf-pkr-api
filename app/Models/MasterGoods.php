@@ -94,5 +94,17 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
         ->get();
         return $result;
     }
+
+    public static function findNameCategoryStatus($name, $category, $status, $limit = 15){
+
+        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'currency', 'category', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        ->where('name','like', '%' .$name. '%')
+        ->where('category','like', '%' .$category. '%')
+        ->where('is_active','like', '%' .$status. '%')
+        ->orderBy('master_goods_id', 'DESC')        
+        ->paginate($limit);
+
+        return $result;
+    }
     
 }
