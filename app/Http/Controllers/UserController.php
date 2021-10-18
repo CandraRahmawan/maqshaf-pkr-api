@@ -25,7 +25,7 @@ class UserController extends Controller
         $limit = $request->input('limit');
 
         $buildData = [];
-        $data = User::findAll($limit);
+        $data = User::findAllUserAndDeposit($limit);
         // return $data;
 
         foreach ($data as $value) {
@@ -42,7 +42,8 @@ class UserController extends Controller
                     'updatedBy' => $value->updatedBy,
                     'isDelete' => $value->isDelete,
                     'deletedAt' => $value->deletedAt,
-                    'deletedBy' => $value->deletedBy
+                    'deletedBy' => $value->deletedBy,
+                    'saldo' => $value->saldo ? (int) $value->saldo : 0
 
                 ]
             );

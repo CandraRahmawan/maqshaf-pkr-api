@@ -20,7 +20,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public $timestamps = false;
 
     public static function findAll($limit=5){
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')
+        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')        
         ->where('is_delete', null)
         ->orderBy('user_id', 'DESC')
         ->paginate($limit);
@@ -147,6 +147,16 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
         return $results;
 
+    }
+
+    public static function findAllUserAndDeposit($limit=5){
+        $results = User::select('users.user_id as userId', 'users.nis', 'users.full_name as fullName', 'users.class', 'users.address', 'users.created_at as createdAt', 'users.created_by as createdBy', 'users.updated_at as updatedAt', 'users.updated_by as updatedBy', 'users.is_delete as isDelete', 'users.deleted_at as deletedAt', 'users.deleted_by as deletedBy', 'deposit.saldo')
+        ->leftjoin('deposit', 'deposit.user_id', '=', 'users.user_id')
+        ->where('users.is_delete', null)
+        ->orderBy('users.user_id', 'DESC')
+        ->paginate($limit);
+
+        return $results;
     }
 
 
