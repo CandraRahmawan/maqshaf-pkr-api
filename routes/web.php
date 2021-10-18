@@ -18,8 +18,8 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($router) {
-	$router->get('user/all', 'UserController@findAll');
-	$router->get('user/search', 'UserController@findNameOrNis');
+	
+	$router->get('user/all', 'UserController@findNameOrNis');
 	$router->post('user/add', [ 'uses' =>'UserController@insert']);
 	$router->put('user/update/{id}', [ 'uses' =>'UserController@updateData']);
 	$router->delete('user/delete/{id}', [ 'uses' =>'UserController@deletById']);
@@ -34,13 +34,13 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	$router->get('administrator/{id}', [ 'uses' =>'AdministratorController@findById']);
 
 
-	$router->get('deposit/all', [ 'uses' => 'DepositController@findByAllKredit']);
-	$router->get('deposit/search', [ 'uses' => 'DepositController@findAllKreditByTrxCode']);
+	
+	$router->get('deposit/all', [ 'uses' => 'DepositController@findAllKreditByTrxCode']);
 	$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
 
 
-	$router->get('debet/all', [ 'uses' => 'DepositController@findByAllDebet']);
-	$router->get('debet/search', [ 'uses' => 'DepositController@findAllDebetNisOrTransactionCode']);
+	
+	$router->get('debet/all', [ 'uses' => 'DepositController@findAllDebetNisOrTransactionCode']);
 	
 
 	$router->get('mastergood/all', 'MasterGoodController@findAll');
