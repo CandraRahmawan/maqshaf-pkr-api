@@ -120,11 +120,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public static function findByNameAndNis($limit, $name, $nis){
 
-        $results = User::select('user_id as userId', 'nis', 'full_name as fullName', 'class', 'address', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy', 'is_delete as isDelete', 'deleted_at as deletedAt', 'deleted_by as deletedBy')        
-        ->where('nis', 'like', '%'. $nis . '%')
-        ->where('full_name','like', '%' . $name . '%')        
-        ->where('is_delete', null)
-        ->orderBy('user_id', 'DESC')
+        $results = User::select('users.user_id as userId', 'users.nis', 'users.full_name as fullName', 'users.class', 'users.address', 'users.created_at as createdAt', 'users.created_by as createdBy', 'users.updated_at as updatedAt', 'users.updated_by as updatedBy', 'users.is_delete as isDelete', 'users.deleted_at as deletedAt', 'users.deleted_by as deletedBy', 'deposit.saldo')
+        ->leftjoin('deposit', 'deposit.user_id', '=', 'users.user_id')
+        ->where('users.nis', 'like', '%'. $nis . '%')
+        ->where('users.full_name','like', '%' . $name . '%')        
+        ->where('users.is_delete', null)
+        ->orderBy('users.user_id', 'DESC')
         ->paginate($limit);        
 
         return $results;
