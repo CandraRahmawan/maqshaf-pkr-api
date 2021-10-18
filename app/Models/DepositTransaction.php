@@ -109,9 +109,11 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
         return $result;
     }
 
-    public static function getAllKreditFindByTrxCOde($limit = 10, $trxCode){
+    public static function getAllKreditFindByTrxCOde($limit = 10, $trxCode, $year, $month){
         $result = DepositTransaction::select('*')        
         ->where('type', 3)
+        ->whereYear('transaction_date', $year)
+        ->whereMonth('transaction_date', $month)
         ->where('transaction_code', 'like', '%' . $trxCode . '%')
         ->orderBy('deposit_transaction_id', 'DESC')
         ->paginate($limit);
@@ -119,11 +121,13 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
         return $result;
     }
 
-    public static function getDebitByNisOrTransactionCode($limit = 10, $nis, $trxCode){
+    public static function getDebitByNisOrTransactionCode($limit = 10, $nis, $trxCode, $year, $month){
         $result = DepositTransaction::select('*')
         ->join('transactions', 'transactions.transaction_id','=', 'deposit_transactions.transaction_id')
         ->join('users', 'users.user_id', '=', 'transactions.user_id')
         ->where('type', 1)
+        ->whereYear('deposit_transactions.transaction_date', $year)
+        ->whereMonth('deposit_transactions.transaction_date', $month)
         ->where('transactions.transaction_code', 'like', '%' . $trxCode . '%')
         ->where('users.nis', 'like', '%' . $nis . '%')
         ->orderBy('deposit_transaction_id', 'DESC')
