@@ -124,10 +124,8 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
         ->join('transactions', 'transactions.transaction_id','=', 'deposit_transactions.transaction_id')
         ->join('users', 'users.user_id', '=', 'transactions.user_id')
         ->where('type', 1)
-        ->where(function($buildWhere) use ($nis, $trxCode){
-            $buildWhere->where('transactions.transaction_code',$trxCode)
-            ->orWhere('users.nis', $nis);
-        })
+        ->where('transactions.transaction_code', 'like', '%' . $trxCode . '%')
+        ->where('users.nis', 'like', '%' . $nis . '%')
         ->orderBy('deposit_transaction_id', 'DESC')
         ->paginate($limit);
 

@@ -124,6 +124,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         ->where('nis', 'like', '%'. $nis . '%')
         ->where('full_name','like', '%' . $name . '%')        
         ->where('is_delete', null)
+        ->orderBy('user_id', 'DESC')
         ->paginate($limit);        
 
         return $results;
