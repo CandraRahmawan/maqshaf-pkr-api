@@ -325,7 +325,7 @@ class UserController extends Controller
             }
 
         }else{
-            return Response::responseWithMessage(200, "user mempunyai saldo", $cekSaldoUser);
+            return Response::responseWithMessage(400, "user mempunyai saldo", $cekSaldoUser);
         }
         
         return Response::responseWithMessage($code, $message);
