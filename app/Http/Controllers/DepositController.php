@@ -538,8 +538,10 @@ public function kredit(Request $request, $userId){
     public function findAllKreditByTrxCode(Request $request){
         $limit = $request->input('limit');
         $trxCode = $request->input('transactionCode');
+        $year = $request->input('year');
+        $month = $request->input('month');
 
-        $data = DepositTransaction::getAllKreditFindByTrxCOde($limit, $trxCode);
+        $data = DepositTransaction::getAllKreditFindByTrxCOde($limit, $trxCode, $year, $month);
 
 
         $buildData = $this->buildDataDebitOrKreditAll($data);
@@ -563,7 +565,9 @@ public function kredit(Request $request, $userId){
         $limit = $request->input('limit');
         $trxCode = $request->input('transactionCode');
         $nis = $request->input('nis');
-        $data = DepositTransaction::getDebitByNisOrTransactionCode($limit, $nis, $trxCode);
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $data = DepositTransaction::getDebitByNisOrTransactionCode($limit, $nis, $trxCode, $year, $month);
         // return $data;
 
         $buildData = $this->buildDataDebitOrKreditAll($data, true);
