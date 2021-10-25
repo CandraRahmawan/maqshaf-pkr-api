@@ -79,6 +79,7 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
 
     public static function findByName($name, $limit = 10){
         $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'currency', 'category', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        ->where('is_active', 1)
         ->where('name', 'like', '%' . $name . '%')
         ->orderBy('master_goods_id', 'DESC')
         ->paginate($limit);
@@ -102,6 +103,16 @@ class MasterGoods extends Model implements AuthenticatableContract, Authorizable
         ->where('category','like', '%' .$category. '%')
         ->where('is_active','like', '%' .$status. '%')
         ->orderBy('master_goods_id', 'DESC')        
+        ->paginate($limit);
+
+        return $result;
+    }
+
+    public static function getAllAlctive($limit = 15){
+
+        $result = MasterGoods::select('master_goods_id as masterGoodsId', 'name', 'image', 'description', 'price', 'is_active as isActive', 'code', 'currency', 'category', 'created_at as createdAt', 'created_by as createdBy', 'updated_at as updatedAt', 'updated_by as updatedBy')
+        ->where('is_active',1)
+        ->orderBy('master_goods_id', 'DESC')
         ->paginate($limit);
 
         return $result;

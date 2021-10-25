@@ -165,7 +165,7 @@ class DepositController extends Controller
                         // Total bayar Rp 17.500, sisa saldo anda adalah Rp 15.0000
 
 
-                            $ressMessage = $code == 200 ? "Total bayar Rp ". $totalBayar .", sisa saldo anda adalah Rp ". $finalSaldo : "bad request";
+                            $ressMessage = $code == 200 ? "Total bayar Rp ". number_format($totalBayar,0,',','.') .", sisa saldo anda adalah Rp ". number_format($finalSaldo,0,',','.') : "bad request";
 
                             $ress = Response::responseWithMessage($code, $ressMessage);
 

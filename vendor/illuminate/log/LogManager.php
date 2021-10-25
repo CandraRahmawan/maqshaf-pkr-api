@@ -237,23 +237,15 @@ class LogManager implements LoggerInterface
      */
     protected function createStackDriver(array $config)
     {
-        if (is_string($config['channels'])) {
-            $config['channels'] = explode(',', $config['channels']);
-        }
-
         $handlers = collect($config['channels'])->flatMap(function ($channel) {
             return $this->channel($channel)->getHandlers();
-        })->all();
-
-        $processors = collect($config['channels'])->flatMap(function ($channel) {
-            return $this->channel($channel)->getProcessors();
         })->all();
 
         if ($config['ignore_exceptions'] ?? false) {
             $handlers = [new WhatFailureGroupHandler($handlers)];
         }
 
-        return new Monolog($this->parseChannel($config), $handlers, $processors);
+        return new Monolog($this->parseChannel($config), $handlers);
     }
 
     /**
@@ -502,7 +494,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function emergency($message, array $context = [])
@@ -518,7 +509,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function alert($message, array $context = [])
@@ -533,7 +523,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function critical($message, array $context = [])
@@ -547,7 +536,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function error($message, array $context = [])
@@ -563,7 +551,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function warning($message, array $context = [])
@@ -576,7 +563,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function notice($message, array $context = [])
@@ -591,7 +577,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function info($message, array $context = [])
@@ -604,7 +589,6 @@ class LogManager implements LoggerInterface
      *
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function debug($message, array $context = [])
@@ -618,7 +602,6 @@ class LogManager implements LoggerInterface
      * @param  mixed  $level
      * @param  string  $message
      * @param  array  $context
-     *
      * @return void
      */
     public function log($level, $message, array $context = [])

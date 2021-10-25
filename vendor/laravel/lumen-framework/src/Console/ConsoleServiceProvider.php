@@ -6,8 +6,6 @@ use Illuminate\Auth\Console\ClearResetsCommand;
 use Illuminate\Cache\Console\CacheTableCommand;
 use Illuminate\Cache\Console\ClearCommand as CacheClearCommand;
 use Illuminate\Cache\Console\ForgetCommand as CacheForgetCommand;
-use Illuminate\Console\Scheduling\ScheduleFinishCommand;
-use Illuminate\Console\Scheduling\ScheduleRunCommand;
 use Illuminate\Database\Console\Migrations\FreshCommand as MigrateFreshCommand;
 use Illuminate\Database\Console\Migrations\InstallCommand as MigrateInstallCommand;
 use Illuminate\Database\Console\Migrations\MigrateCommand;
@@ -19,7 +17,6 @@ use Illuminate\Database\Console\Migrations\StatusCommand as MigrateStatusCommand
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Database\Console\Seeds\SeederMakeCommand;
 use Illuminate\Database\Console\WipeCommand;
-use Illuminate\Queue\Console\BatchesTableCommand;
 use Illuminate\Queue\Console\FailedTableCommand;
 use Illuminate\Queue\Console\FlushFailedCommand as FlushFailedQueueCommand;
 use Illuminate\Queue\Console\ForgetFailedCommand as ForgetFailedQueueCommand;
@@ -58,8 +55,8 @@ class ConsoleServiceProvider extends ServiceProvider
         'QueueWork' => 'command.queue.work',
         'Seed' => 'command.seed',
         'Wipe' => 'command.wipe',
-        'ScheduleFinish' => ScheduleFinishCommand::class,
-        'ScheduleRun' => ScheduleRunCommand::class,
+        'ScheduleFinish' => 'Illuminate\Console\Scheduling\ScheduleFinishCommand',
+        'ScheduleRun' => 'Illuminate\Console\Scheduling\ScheduleRunCommand',
     ];
 
     /**
@@ -71,7 +68,6 @@ class ConsoleServiceProvider extends ServiceProvider
         'CacheTable' => 'command.cache.table',
         'MigrateMake' => 'command.migrate.make',
         'QueueFailedTable' => 'command.queue.failed-table',
-        'QueueBatchesTable' => 'command.queue.batches-table',
         'QueueTable' => 'command.queue.table',
         'SeederMake' => 'command.seeder.make',
     ];
@@ -97,7 +93,7 @@ class ConsoleServiceProvider extends ServiceProvider
     protected function registerCommands(array $commands)
     {
         foreach (array_keys($commands) as $command) {
-            $this->{"register{$command}Command"}();
+            call_user_func_array([$this, "register{$command}Command"], []);
         }
 
         $this->commands(array_values($commands));
@@ -159,7 +155,7 @@ class ConsoleServiceProvider extends ServiceProvider
     protected function registerMigrateCommand()
     {
         $this->app->singleton('command.migrate', function ($app) {
-            return new MigrateCommand($app['migrator'], $app['events']);
+            return new MigrateCommand($app['migrator']);
         });
     }
 
@@ -355,18 +351,6 @@ class ConsoleServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function registerQueueBatchesTableCommand()
-    {
-        $this->app->singleton('command.queue.batches-table', function ($app) {
-            return new BatchesTableCommand($app['files'], $app['composer']);
-        });
-    }
-
-    /**
-     * Register the command.
-     *
-     * @return void
-     */
     protected function registerQueueTableCommand()
     {
         $this->app->singleton('command.queue.table', function ($app) {
@@ -417,7 +401,7 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected function registerScheduleFinishCommand()
     {
-        $this->app->singleton(ScheduleFinishCommand::class);
+        $this->app->singleton('Illuminate\Console\Scheduling\ScheduleFinishCommand');
     }
 
     /**
@@ -427,7 +411,7 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected function registerScheduleRunCommand()
     {
-        $this->app->singleton(ScheduleRunCommand::class);
+        $this->app->singleton('Illuminate\Console\Scheduling\ScheduleRunCommand');
     }
 
     /**
