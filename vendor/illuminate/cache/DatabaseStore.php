@@ -4,15 +4,13 @@ namespace Illuminate\Cache;
 
 use Closure;
 use Exception;
-use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\PostgresConnection;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
 
-class DatabaseStore implements LockProvider, Store
+class DatabaseStore implements Store
 {
     use InteractsWithTime, RetrievesMultipleKeys;
 
@@ -22,13 +20,6 @@ class DatabaseStore implements LockProvider, Store
      * @var \Illuminate\Database\ConnectionInterface
      */
     protected $connection;
-
-    /**
-     * The database connection instance that should be used to manage locks.
-     *
-     * @var \Illuminate\Database\ConnectionInterface
-     */
-    protected $lockConnection;
 
     /**
      * The name of the cache table.
@@ -45,40 +36,18 @@ class DatabaseStore implements LockProvider, Store
     protected $prefix;
 
     /**
-     * The name of the cache locks table.
-     *
-     * @var string
-     */
-    protected $lockTable;
-
-    /**
-     * An array representation of the lock lottery odds.
-     *
-     * @var array
-     */
-    protected $lockLottery;
-
-    /**
      * Create a new database store.
      *
      * @param  \Illuminate\Database\ConnectionInterface  $connection
      * @param  string  $table
      * @param  string  $prefix
-     * @param  string  $lockTable
-     * @param  array  $lockLottery
      * @return void
      */
-    public function __construct(ConnectionInterface $connection,
-                                $table,
-                                $prefix = '',
-                                $lockTable = 'cache_locks',
-                                $lockLottery = [2, 100])
+    public function __construct(ConnectionInterface $connection, $table, $prefix = '')
     {
         $this->table = $table;
         $this->prefix = $prefix;
         $this->connection = $connection;
-        $this->lockTable = $lockTable;
-        $this->lockLottery = $lockLottery;
     }
 
     /**
@@ -125,7 +94,9 @@ class DatabaseStore implements LockProvider, Store
     public function put($key, $value, $seconds)
     {
         $key = $this->prefix.$key;
+
         $value = $this->serialize($value);
+
         $expiration = $this->getTime() + $seconds;
 
         try {
@@ -134,33 +105,6 @@ class DatabaseStore implements LockProvider, Store
             $result = $this->table()->where('key', $key)->update(compact('value', 'expiration'));
 
             return $result > 0;
-        }
-    }
-
-    /**
-     * Store an item in the cache if the key doesn't exist.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  int  $seconds
-     * @return bool
-     */
-    public function add($key, $value, $seconds)
-    {
-        $key = $this->prefix.$key;
-        $value = $this->serialize($value);
-        $expiration = $this->getTime() + $seconds;
-
-        try {
-            return $this->table()->insert(compact('key', 'value', 'expiration'));
-        } catch (QueryException $e) {
-            return $this->table()
-                ->where('key', $key)
-                ->where('expiration', '<=', $this->getTime())
-                ->update([
-                    'value' => $value,
-                    'expiration' => $expiration,
-                ]) >= 1;
         }
     }
 
@@ -262,38 +206,6 @@ class DatabaseStore implements LockProvider, Store
     }
 
     /**
-     * Get a lock instance.
-     *
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
-     * @return \Illuminate\Contracts\Cache\Lock
-     */
-    public function lock($name, $seconds = 0, $owner = null)
-    {
-        return new DatabaseLock(
-            $this->lockConnection ?? $this->connection,
-            $this->lockTable,
-            $this->prefix.$name,
-            $seconds,
-            $owner,
-            $this->lockLottery
-        );
-    }
-
-    /**
-     * Restore a lock instance using the owner identifier.
-     *
-     * @param  string  $name
-     * @param  string  $owner
-     * @return \Illuminate\Contracts\Cache\Lock
-     */
-    public function restoreLock($name, $owner)
-    {
-        return $this->lock($name, 0, $owner);
-    }
-
-    /**
      * Remove an item from the cache.
      *
      * @param  string  $key
@@ -336,19 +248,6 @@ class DatabaseStore implements LockProvider, Store
     public function getConnection()
     {
         return $this->connection;
-    }
-
-    /**
-     * Specify the name of the connection that should be used to manage locks.
-     *
-     * @param  \Illuminate\Database\ConnectionInterface  $connection
-     * @return $this
-     */
-    public function setLockConnection($connection)
-    {
-        $this->lockConnection = $connection;
-
-        return $this;
     }
 
     /**

@@ -90,7 +90,7 @@ class UserController extends Controller
             'full_name'  => $request->input('fullName'),
             'class'  => $request->input('class'),
             'address' => $request->input('address'),            
-            'pin' => sha1(111111),
+            'pin' => sha1('111111'),
             'created_by' => $dataAdmin,
             'created_at' => $now
         );

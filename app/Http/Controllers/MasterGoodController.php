@@ -245,7 +245,7 @@ class MasterGoodController extends Controller
             $data = MasterGoods::findByName($nameInput, $limit);
             
         }else{
-            $data = MasterGoods::getAll($limit);
+            $data = MasterGoods::getAllAlctive($limit);
         }
 
         foreach ($data as $value) {

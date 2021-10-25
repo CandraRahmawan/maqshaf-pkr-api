@@ -18,7 +18,7 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($router) {
-	
+	// $router->get('user/all', 'UserController@findAll');
 	$router->get('user/all', 'UserController@findNameOrNis');
 	$router->post('user/add', [ 'uses' =>'UserController@insert']);
 	$router->put('user/update/{id}', [ 'uses' =>'UserController@updateData']);
@@ -34,12 +34,12 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	$router->get('administrator/{id}', [ 'uses' =>'AdministratorController@findById']);
 
 
-	
+	// $router->get('deposit/all', [ 'uses' => 'DepositController@findByAllKredit']);
 	$router->get('deposit/all', [ 'uses' => 'DepositController@findAllKreditByTrxCode']);
 	$router->post('deposit/kredit/{userId}', 'DepositController@kredit');
 
 
-	
+	// $router->get('debet/all', [ 'uses' => 'DepositController@findByAllDebet']);
 	$router->get('debet/all', [ 'uses' => 'DepositController@findAllDebetNisOrTransactionCode']);
 	
 
@@ -53,6 +53,9 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	$router->post('withDrawl/{id}', [ 'uses' =>'DepositController@withDrawl']);
 
 	$router->get('transactions/dashboard', [ 'uses' =>'TransactionsController@dashboard']);
+	$router->get('transactions/dashboard/all', [ 'uses' =>'TransactionsController@dashboardAll']);
+
+	// $router->get('transactions/print', [ 'uses' =>'TransactionsController@print']);
 
 });
 
@@ -83,7 +86,8 @@ $router->get('deposit/{id}', 'DepositController@findById');
 
 
 $router->post('transactions/add', 'TransactionsController@insert');
+
 $router->put('transactions/update/{id}', 'TransactionsController@updateData');
 $router->get('transactions/{id}', 'TransactionsController@findById');
 
-
+$router->get('print/invoice', 'TransactionsController@print');

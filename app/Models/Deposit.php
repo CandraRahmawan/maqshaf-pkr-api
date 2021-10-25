@@ -153,5 +153,7 @@ class Deposit extends Model implements AuthenticatableContract, AuthorizableCont
         return $result;
 
     }
+
+    
    
 }

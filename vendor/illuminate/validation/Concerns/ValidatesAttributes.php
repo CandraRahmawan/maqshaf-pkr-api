@@ -5,6 +5,7 @@ namespace Illuminate\Validation\Concerns;
 use Countable;
 use DateTime;
 use DateTimeInterface;
+use DateTimeZone;
 use Egulias\EmailValidator\EmailValidator;
 use Egulias\EmailValidator\Validation\DNSCheckValidation;
 use Egulias\EmailValidator\Validation\MultipleValidationWithAnd;
@@ -14,6 +15,7 @@ use Egulias\EmailValidator\Validation\SpoofCheckValidation;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Exists;
@@ -22,6 +24,7 @@ use Illuminate\Validation\ValidationData;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 trait ValidatesAttributes
 {
@@ -56,7 +59,7 @@ trait ValidatesAttributes
 
         if ($url = parse_url($value, PHP_URL_HOST)) {
             try {
-                return count(dns_get_record($url, DNS_A | DNS_AAAA)) > 0;
+                return count(dns_get_record($url.'.', DNS_A | DNS_AAAA)) > 0;
             } catch (Exception $e) {
                 return false;
             }
@@ -184,9 +187,19 @@ trait ValidatesAttributes
      */
     protected function getDateTimestamp($value)
     {
-        $date = is_null($value) ? null : $this->getDateTime($value);
+        if ($value instanceof DateTimeInterface) {
+            return $value->getTimestamp();
+        }
 
-        return $date ? $date->getTimestamp() : null;
+        if ($this->isTestingRelativeDateTime($value)) {
+            $date = $this->getDateTime($value);
+
+            if (! is_null($date)) {
+                return $date->getTimestamp();
+            }
+        }
+
+        return strtotime($value);
     }
 
     /**
@@ -234,10 +247,27 @@ trait ValidatesAttributes
     protected function getDateTime($value)
     {
         try {
-            return Date::parse($value);
+            if ($this->isTestingRelativeDateTime($value)) {
+                return @Date::parse($value) ?: null;
+            }
+
+            return date_create($value) ?: null;
         } catch (Exception $e) {
             //
         }
+    }
+
+    /**
+     * Check if the given value should be adjusted to Carbon::getTestNow().
+     *
+     * @param  mixed  $value
+     * @return bool
+     */
+    protected function isTestingRelativeDateTime($value)
+    {
+        return Carbon::hasTestNow() && is_string($value) && (
+            $value === 'now' || Carbon::hasRelativeKeywords($value)
+        );
     }
 
     /**
@@ -289,20 +319,11 @@ trait ValidatesAttributes
      *
      * @param  string  $attribute
      * @param  mixed  $value
-     * @param  array  $parameters
      * @return bool
      */
-    public function validateArray($attribute, $value, $parameters = [])
+    public function validateArray($attribute, $value)
     {
-        if (! is_array($value)) {
-            return false;
-        }
-
-        if (empty($parameters)) {
-            return true;
-        }
-
-        return empty(array_diff_key($value, array_fill_keys($parameters, '')));
+        return is_array($value);
     }
 
     /**
@@ -421,12 +442,14 @@ trait ValidatesAttributes
         $this->requireParameterCount(1, $parameters, 'different');
 
         foreach ($parameters as $parameter) {
-            if (Arr::has($this->data, $parameter)) {
-                $other = Arr::get($this->data, $parameter);
+            if (! Arr::has($this->data, $parameter)) {
+                return false;
+            }
 
-                if ($value === $other) {
-                    return false;
-                }
+            $other = Arr::get($this->data, $parameter);
+
+            if ($value === $other) {
+                return false;
             }
         }
 
@@ -556,7 +579,7 @@ trait ValidatesAttributes
             return empty(preg_grep('/^'.preg_quote($value, '/').'$/iu', $data));
         }
 
-        return ! in_array($value, array_values($data), in_array('strict', $parameters));
+        return ! in_array($value, array_values($data));
     }
 
     /**
@@ -617,23 +640,19 @@ trait ValidatesAttributes
             ->unique()
             ->map(function ($validation) {
                 if ($validation === 'rfc') {
-                    return new RFCValidation;
+                    return new RFCValidation();
                 } elseif ($validation === 'strict') {
-                    return new NoRFCWarningsValidation;
+                    return new NoRFCWarningsValidation();
                 } elseif ($validation === 'dns') {
-                    return new DNSCheckValidation;
+                    return new DNSCheckValidation();
                 } elseif ($validation === 'spoof') {
-                    return new SpoofCheckValidation;
+                    return new SpoofCheckValidation();
                 } elseif ($validation === 'filter') {
-                    return new FilterEmailValidation;
-                } elseif ($validation === 'filter_unicode') {
-                    return FilterEmailValidation::unicode();
-                } elseif (is_string($validation) && class_exists($validation)) {
-                    return $this->container->make($validation);
+                    return new FilterEmailValidation();
                 }
             })
             ->values()
-            ->all() ?: [new RFCValidation];
+            ->all() ?: [new RFCValidation()];
 
         return (new EmailValidator)->isValid($value, new MultipleValidationWithAnd($validations));
     }
@@ -676,7 +695,7 @@ trait ValidatesAttributes
      */
     protected function getExistCount($connection, $table, $column, $value, $parameters)
     {
-        $verifier = $this->getPresenceVerifier($connection);
+        $verifier = $this->getPresenceVerifierFor($connection);
 
         $extra = $this->getExtraConditions(
             array_values(array_slice($parameters, 2))
@@ -705,17 +724,17 @@ trait ValidatesAttributes
     {
         $this->requireParameterCount(1, $parameters, 'unique');
 
-        [$connection, $table, $idColumn] = $this->parseTable($parameters[0]);
+        [$connection, $table] = $this->parseTable($parameters[0]);
 
         // The second parameter position holds the name of the column that needs to
         // be verified as unique. If this parameter isn't specified we will just
         // assume that this column to be verified shares the attribute's name.
         $column = $this->getQueryColumn($parameters, $attribute);
 
-        $id = null;
+        [$idColumn, $id] = [null, null];
 
         if (isset($parameters[2])) {
-            [$idColumn, $id] = $this->getUniqueIds($idColumn, $parameters);
+            [$idColumn, $id] = $this->getUniqueIds($parameters);
 
             if (! is_null($id)) {
                 $id = stripslashes($id);
@@ -725,7 +744,7 @@ trait ValidatesAttributes
         // The presence verifier is responsible for counting rows within this store
         // mechanism which might be a relational database or any other permanent
         // data store like Redis, etc. We will use it to determine uniqueness.
-        $verifier = $this->getPresenceVerifier($connection);
+        $verifier = $this->getPresenceVerifierFor($connection);
 
         $extra = $this->getUniqueExtra($parameters);
 
@@ -741,13 +760,12 @@ trait ValidatesAttributes
     /**
      * Get the excluded ID column and value for the unique rule.
      *
-     * @param  string|null  $idColumn
      * @param  array  $parameters
      * @return array
      */
-    protected function getUniqueIds($idColumn, $parameters)
+    protected function getUniqueIds($parameters)
     {
-        $idColumn = $idColumn ?? $parameters[3] ?? 'id';
+        $idColumn = $parameters[3] ?? 'id';
 
         return [$idColumn, $this->prepareUniqueId($parameters[2])];
     }
@@ -804,16 +822,11 @@ trait ValidatesAttributes
             $model = new $table;
 
             $table = $model->getTable();
+
             $connection = $connection ?? $model->getConnectionName();
-
-            if (Str::contains($table, '.') && Str::startsWith($table, $connection)) {
-                $connection = null;
-            }
-
-            $idColumn = $model->getKeyName();
         }
 
-        return [$connection, $table, $idColumn ?? null];
+        return [$connection, $table];
     }
 
     /**
@@ -1068,7 +1081,7 @@ trait ValidatesAttributes
     }
 
     /**
-     * Validate that the values of an attribute are in another attribute.
+     * Validate that the values of an attribute is in another attribute.
      *
      * @param  string  $attribute
      * @param  mixed  $value
@@ -1265,29 +1278,6 @@ trait ValidatesAttributes
     }
 
     /**
-     * Validate the value of an attribute is a multiple of a given value.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array  $parameters
-     * @return bool
-     */
-    public function validateMultipleOf($attribute, $value, $parameters)
-    {
-        $this->requireParameterCount(1, $parameters, 'multiple_of');
-
-        if (! $this->validateNumeric($attribute, $value) || ! $this->validateNumeric($attribute, $parameters[0])) {
-            return false;
-        }
-
-        if ((float) $parameters[0] === 0.0) {
-            return false;
-        }
-
-        return bcmod($value, $parameters[0], 16) === '0.0000000000000000';
-    }
-
-    /**
      * "Indicate" validation should pass if value is null.
      *
      * Always returns true, just lets us put "nullable" in rules.
@@ -1434,65 +1424,10 @@ trait ValidatesAttributes
             return true;
         }
 
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
+        [$values, $other] = $this->prepareValuesAndOther($parameters);
 
         if (in_array($other, $values, is_bool($other) || is_null($other))) {
             return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
-    }
-
-    /**
-     * Validate that an attribute does not exist.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
-     */
-    public function validateProhibited($attribute, $value)
-    {
-        return false;
-    }
-
-    /**
-     * Validate that an attribute does not exist when another attribute has a given value.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
-     */
-    public function validateProhibitedIf($attribute, $value, $parameters)
-    {
-        $this->requireParameterCount(2, $parameters, 'prohibited_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return ! $this->validateRequired($attribute, $value);
-        }
-
-        return true;
-    }
-
-    /**
-     * Validate that an attribute does not exist unless another attribute has a given value.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
-     */
-    public function validateProhibitedUnless($attribute, $value, $parameters)
-    {
-        $this->requireParameterCount(2, $parameters, 'prohibited_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (! in_array($other, $values, is_bool($other) || is_null($other))) {
-            return ! $this->validateRequired($attribute, $value);
         }
 
         return true;
@@ -1514,7 +1449,7 @@ trait ValidatesAttributes
             return true;
         }
 
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
+        [$values, $other] = $this->prepareValuesAndOther($parameters);
 
         return ! in_array($other, $values, is_bool($other) || is_null($other));
     }
@@ -1531,7 +1466,7 @@ trait ValidatesAttributes
     {
         $this->requireParameterCount(2, $parameters, 'exclude_unless');
 
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
+        [$values, $other] = $this->prepareValuesAndOther($parameters);
 
         return in_array($other, $values, is_bool($other) || is_null($other));
     }
@@ -1548,29 +1483,10 @@ trait ValidatesAttributes
     {
         $this->requireParameterCount(2, $parameters, 'required_unless');
 
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
+        [$values, $other] = $this->prepareValuesAndOther($parameters);
 
         if (! in_array($other, $values, is_bool($other) || is_null($other))) {
             return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
-    }
-
-    /**
-     * Indicate that an attribute should be excluded when another attribute is missing.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
-     */
-    public function validateExcludeWithout($attribute, $value, $parameters)
-    {
-        $this->requireParameterCount(1, $parameters, 'exclude_without');
-
-        if ($this->anyFailingRequired($parameters)) {
-            return false;
         }
 
         return true;
@@ -1582,7 +1498,7 @@ trait ValidatesAttributes
      * @param  array  $parameters
      * @return array
      */
-    public function parseDependentRuleParameters($parameters)
+    protected function prepareValuesAndOther($parameters)
     {
         $other = Arr::get($this->data, $parameters[0]);
 
@@ -1660,7 +1576,7 @@ trait ValidatesAttributes
     }
 
     /**
-     * Validate that an attribute exists when all other attributes exist.
+     * Validate that an attribute exists when all other attributes exists.
      *
      * @param  string  $attribute
      * @param  mixed  $value
@@ -1835,7 +1751,15 @@ trait ValidatesAttributes
      */
     public function validateTimezone($attribute, $value)
     {
-        return in_array($value, timezone_identifiers_list(), true);
+        try {
+            new DateTimeZone($value);
+        } catch (Exception $e) {
+            return false;
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1857,7 +1781,7 @@ trait ValidatesAttributes
          * (c) Fabien Potencier <fabien@symfony.com> http://symfony.com
          */
         $pattern = '~^
-            (aaa|aaas|about|acap|acct|acd|acr|adiumxtra|adt|afp|afs|aim|amss|android|appdata|apt|ark|attachment|aw|barion|beshare|bitcoin|bitcoincash|blob|bolo|browserext|calculator|callto|cap|cast|casts|chrome|chrome-extension|cid|coap|coap\+tcp|coap\+ws|coaps|coaps\+tcp|coaps\+ws|com-eventbrite-attendee|content|conti|crid|cvs|dab|data|dav|diaspora|dict|did|dis|dlna-playcontainer|dlna-playsingle|dns|dntp|dpp|drm|drop|dtn|dvb|ed2k|elsi|example|facetime|fax|feed|feedready|file|filesystem|finger|first-run-pen-experience|fish|fm|ftp|fuchsia-pkg|geo|gg|git|gizmoproject|go|gopher|graph|gtalk|h323|ham|hcap|hcp|http|https|hxxp|hxxps|hydrazone|iax|icap|icon|im|imap|info|iotdisco|ipn|ipp|ipps|irc|irc6|ircs|iris|iris\.beep|iris\.lwz|iris\.xpc|iris\.xpcs|isostore|itms|jabber|jar|jms|keyparc|lastfm|ldap|ldaps|leaptofrogans|lorawan|lvlt|magnet|mailserver|mailto|maps|market|message|mid|mms|modem|mongodb|moz|ms-access|ms-browser-extension|ms-calculator|ms-drive-to|ms-enrollment|ms-excel|ms-eyecontrolspeech|ms-gamebarservices|ms-gamingoverlay|ms-getoffice|ms-help|ms-infopath|ms-inputapp|ms-lockscreencomponent-config|ms-media-stream-id|ms-mixedrealitycapture|ms-mobileplans|ms-officeapp|ms-people|ms-project|ms-powerpoint|ms-publisher|ms-restoretabcompanion|ms-screenclip|ms-screensketch|ms-search|ms-search-repair|ms-secondary-screen-controller|ms-secondary-screen-setup|ms-settings|ms-settings-airplanemode|ms-settings-bluetooth|ms-settings-camera|ms-settings-cellular|ms-settings-cloudstorage|ms-settings-connectabledevices|ms-settings-displays-topology|ms-settings-emailandaccounts|ms-settings-language|ms-settings-location|ms-settings-lock|ms-settings-nfctransactions|ms-settings-notifications|ms-settings-power|ms-settings-privacy|ms-settings-proximity|ms-settings-screenrotation|ms-settings-wifi|ms-settings-workplace|ms-spd|ms-sttoverlay|ms-transit-to|ms-useractivityset|ms-virtualtouchpad|ms-visio|ms-walk-to|ms-whiteboard|ms-whiteboard-cmd|ms-word|msnim|msrp|msrps|mss|mtqp|mumble|mupdate|mvn|news|nfs|ni|nih|nntp|notes|ocf|oid|onenote|onenote-cmd|opaquelocktoken|openpgp4fpr|pack|palm|paparazzi|payto|pkcs11|platform|pop|pres|prospero|proxy|pwid|psyc|pttp|qb|query|redis|rediss|reload|res|resource|rmi|rsync|rtmfp|rtmp|rtsp|rtsps|rtspu|s3|secondlife|service|session|sftp|sgn|shttp|sieve|simpleledger|sip|sips|skype|smb|sms|smtp|snews|snmp|soap\.beep|soap\.beeps|soldat|spiffe|spotify|ssh|steam|stun|stuns|submit|svn|tag|teamspeak|tel|teliaeid|telnet|tftp|tg|things|thismessage|tip|tn3270|tool|ts3server|turn|turns|tv|udp|unreal|urn|ut2004|v-event|vemmi|ventrilo|videotex|vnc|view-source|wais|webcal|wpid|ws|wss|wtai|wyciwyg|xcon|xcon-userid|xfire|xmlrpc\.beep|xmlrpc\.beeps|xmpp|xri|ymsgr|z39\.50|z39\.50r|z39\.50s)://                                 # protocol
+            (aaa|aaas|about|acap|acct|acd|acr|adiumxtra|adt|afp|afs|aim|amss|android|appdata|apt|ark|attachment|aw|barion|beshare|bitcoin|bitcoincash|blob|bolo|browserext|calculator|callto|cap|cast|casts|chrome|chrome-extension|cid|coap|coap\+tcp|coap\+ws|coaps|coaps\+tcp|coaps\+ws|com-eventbrite-attendee|content|conti|crid|cvs|dab|data|dav|diaspora|dict|did|dis|dlna-playcontainer|dlna-playsingle|dns|dntp|dpp|drm|drop|dtn|dvb|ed2k|elsi|example|facetime|fax|feed|feedready|file|filesystem|finger|first-run-pen-experience|fish|fm|ftp|fuchsia-pkg|geo|gg|git|gizmoproject|go|gopher|graph|gtalk|h323|ham|hcap|hcp|http|https|hxxp|hxxps|hydrazone|iax|icap|icon|im|imap|info|iotdisco|ipn|ipp|ipps|irc|irc6|ircs|iris|iris\.beep|iris\.lwz|iris\.xpc|iris\.xpcs|isostore|itms|jabber|jar|jms|keyparc|lastfm|ldap|ldaps|leaptofrogans|lorawan|lvlt|magnet|mailserver|mailto|maps|market|message|mid|mms|modem|mongodb|moz|ms-access|ms-browser-extension|ms-calculator|ms-drive-to|ms-enrollment|ms-excel|ms-eyecontrolspeech|ms-gamebarservices|ms-gamingoverlay|ms-getoffice|ms-help|ms-infopath|ms-inputapp|ms-lockscreencomponent-config|ms-media-stream-id|ms-mixedrealitycapture|ms-mobileplans|ms-officeapp|ms-people|ms-project|ms-powerpoint|ms-publisher|ms-restoretabcompanion|ms-screenclip|ms-screensketch|ms-search|ms-search-repair|ms-secondary-screen-controller|ms-secondary-screen-setup|ms-settings|ms-settings-airplanemode|ms-settings-bluetooth|ms-settings-camera|ms-settings-cellular|ms-settings-cloudstorage|ms-settings-connectabledevices|ms-settings-displays-topology|ms-settings-emailandaccounts|ms-settings-language|ms-settings-location|ms-settings-lock|ms-settings-nfctransactions|ms-settings-notifications|ms-settings-power|ms-settings-privacy|ms-settings-proximity|ms-settings-screenrotation|ms-settings-wifi|ms-settings-workplace|ms-spd|ms-sttoverlay|ms-transit-to|ms-useractivityset|ms-virtualtouchpad|ms-visio|ms-walk-to|ms-whiteboard|ms-whiteboard-cmd|ms-word|msnim|msrp|msrps|mss|mtqp|mumble|mupdate|mvn|news|nfs|ni|nih|nntp|notes|ocf|oid|onenote|onenote-cmd|opaquelocktoken|openpgp4fpr|pack|palm|paparazzi|payto|pkcs11|platform|pop|pres|prospero|proxy|pwid|psyc|pttp|qb|query|redis|rediss|reload|res|resource|rmi|rsync|rtmfp|rtmp|rtsp|rtsps|rtspu|s3|secondlife|service|session|sftp|sgn|shttp|sieve|simpleledger|sip|sips|skype|smb|sms|smtp|snews|snmp|soap\.beep|soap\.beeps|soldat|spiffe|spotify|ssh|steam|stun|stuns|submit|svn|tag|teamspeak|tel|teliaeid|telnet|tftp|things|thismessage|tip|tn3270|tool|turn|turns|tv|udp|unreal|urn|ut2004|v-event|vemmi|ventrilo|videotex|vnc|view-source|wais|webcal|wpid|ws|wss|wtai|wyciwyg|xcon|xcon-userid|xfire|xmlrpc\.beep|xmlrpc\.beeps|xmpp|xri|ymsgr|z39\.50|z39\.50r|z39\.50s)://                                 # protocol
             (((?:[\_\.\pL\pN-]|%[0-9A-Fa-f]{2})+:)?((?:[\_\.\pL\pN-]|%[0-9A-Fa-f]{2})+)@)?  # basic auth
             (
                 ([\pL\pN\pS\-\_\.])+(\.?([\pL\pN]|xn\-\-[\pL\pN-]+)+\.?) # a domain name
@@ -1964,7 +1888,7 @@ trait ValidatesAttributes
      * @param  array  $parameters
      * @return array
      */
-    public function parseNamedParameters($parameters)
+    protected function parseNamedParameters($parameters)
     {
         return array_reduce($parameters, function ($result, $item) {
             [$key, $value] = array_pad(explode('=', $item, 2), 2, null);
@@ -2009,7 +1933,6 @@ trait ValidatesAttributes
      *
      * @param  string  $attribute
      * @param  string  $rule
-     *
      * @return void
      */
     protected function shouldBeNumeric($attribute, $rule)

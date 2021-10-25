@@ -162,34 +162,42 @@ public function updateData(Request $request, $id){
         $username = $request->input('username');
         $password = sha1($request->input('password'));
         
-        
+        $dataByUsername = Administrator::findByUsername($username)->first();
         $login = Administrator::findByUsernameAndPassword($username, $password)->first();
         // return $login;
-        if(!empty($login)){
+        if(!empty($dataByUsername)){
+            if(!empty($login)){
 
-            $token = Str::random(40);
+                $token = Str::random(40);
 
-            $data = array(
-                'token' => $token
-            );
+                $data = array(
+                    'token' => $token
+                );
 
-            $update = Administrator::updateData($login->administratorId, $data);
+                $update = Administrator::updateData($login->administratorId, $data);
 
-            if($update){
-                $dataLogin = Administrator::findById($login->administratorId)->first();
-                $code = 200;
-                $ress = Response::response($code, $dataLogin);
+                if($update){
+                    $dataLogin = Administrator::findById($login->administratorId)->first();
+                    $code = 200;
+                    $ress = Response::response($code, $dataLogin);
+                }else{
+                    $code = 400;
+                    $message = "gagal ubah token";
+                    $ress = Response::responseWithMessage($code, $message);    
+                }            
+
             }else{
-                $code = 400;
-                $message = "gagal ubah token";
-                $ress = Response::responseWithMessage($code, $message);    
-            }            
-
+                $code = 400;            
+                $message = "pasword salah";
+                $ress = Response::responseWithMessage($code, $message);
+            } 
         }else{
             $code = 400;            
-            $message = "pasword salah";
-            $ress = Response::responseWithMessage($code, $message);
-        }        
+                $message = "username tidak di temukan";
+                $ress = Response::responseWithMessage($code, $message);
+
+        }
+               
 
         return $ress;
     }
