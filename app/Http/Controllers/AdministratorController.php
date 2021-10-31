@@ -147,10 +147,13 @@ public function updateData(Request $request, $id){
             'updated_at' => $now
         );
         $passOld = sha1($request->input('passwordOld'));
+
+        // return $passOld . " | ". $data['username'];
         $update = Administrator::updatePassword($id, $passOld, $data);
 
         $code = $update ? 200 : 400;
-        $ress = Response::response($code);
+        $message = $update ? 'ubah password berhasil' : 'ubah password gagal';
+        $ress = Response::responseWithMessage($code, $message);
 
         return $ress;
         

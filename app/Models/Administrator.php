@@ -83,7 +83,7 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
             ->update($data);   
 
             DB::commit();
-            $result = true;
+            
 
         }catch (Exception $e){
             DB::rollback();
