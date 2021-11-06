@@ -83,17 +83,19 @@ class UserController extends Controller
     public function insert(Request $request){
         date_default_timezone_set('Asia/Jakarta'); # add your city to set local time zone
         $now = date('Y-m-d H:i:s');
-        
+        $strPass = "111111";
         $dataAdmin = Administrator::findByToken($request->header('api_token'))->first()->username;
         $data = array(
             'nis' => $request->input('nis'),
             'full_name'  => $request->input('fullName'),
             'class'  => $request->input('class'),
             'address' => $request->input('address'),            
-            'pin' => sha1('111111'),
+            'pin' => sha1($strPass),
             'created_by' => $dataAdmin,
             'created_at' => $now
         );
+
+        
 
         $dataUser = User::findByNis($request->input('nis'));
         
