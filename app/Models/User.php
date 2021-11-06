@@ -54,7 +54,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         $user->full_name  = $data['full_name'];
         $user->class  = $data['class'];
         $user->address = $data['address'];
-        $user->pin = sha1($data['pin']);
+        $user->pin = $data['pin'];
         $user->created_by = $data['created_by'];
 
         // User::create(['nis' => 'nis 02']);
