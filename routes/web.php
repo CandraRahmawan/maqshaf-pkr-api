@@ -14,7 +14,7 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+	return $router->app->version();
 });
 
 $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($router) {
@@ -57,6 +57,10 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 
 	// $router->get('transactions/print', [ 'uses' =>'TransactionsController@print']);
 
+	$router->get('print/invoice', 'TransactionsController@print');
+	$router->get('print/kredit', 'TransactionsController@kreditPrint');
+	$router->get('print/mastergoods-sold-out', 'TransactionsController@mastergoodsItemSoldOutPrint');
+
 });
 
 
@@ -90,4 +94,6 @@ $router->post('transactions/add', 'TransactionsController@insert');
 $router->put('transactions/update/{id}', 'TransactionsController@updateData');
 $router->get('transactions/{id}', 'TransactionsController@findById');
 
-$router->get('print/invoice', 'TransactionsController@print');
+
+
+

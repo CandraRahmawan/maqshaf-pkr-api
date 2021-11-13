@@ -222,5 +222,31 @@ class DepositTransaction extends Model implements AuthenticatableContract, Autho
 
         return $result;
     }
+
+    public static function printAllDebitByYearAndMonth($year, $month, $limit = 100000){
+        $result = DepositTransaction::select('deposit_transactions.transaction_code', 'deposit_transactions.transaction_date', 'deposit_transactions.debet', 'users.nis', 'users.full_name', 'users.class')
+        ->join('transactions', 'transactions.transaction_id','=', 'deposit_transactions.transaction_id')
+        ->join('users', 'users.user_id', '=', 'transactions.user_id')
+        ->where('type', 1)
+        ->whereYear('deposit_transactions.transaction_date', $year)
+        ->whereMonth('deposit_transactions.transaction_date', $month)        
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
+
+    public static function printAllKreditFindByTrxCOde($year, $month, $limit = 100000){
+        $result = DepositTransaction::select('deposit_transactions.transaction_code', 'deposit_transactions.kredit', 'deposit_transactions.transaction_date', 'users.nis', 'users.full_name', 'users.class')
+        ->join('deposit', 'deposit.deposit_id', '=', 'deposit_transactions.deposit_id')
+        ->join('users', 'users.user_id', '=', 'deposit.user_id')
+        ->where('type', 3)
+        ->whereYear('transaction_date', $year)
+        ->whereMonth('transaction_date', $month)        
+        ->orderBy('deposit_transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
     
 }
