@@ -101,5 +101,17 @@ class Transactions extends Model implements AuthenticatableContract, Authorizabl
 
         return $results;
     }
+
+    public static function printAllMastergodsSoldOut($year, $month, $limit = 100000){
+        $result = Transactions::select('transactions.transaction_code', 'transactions.transaction_date', 'transaction_items.name', 'transaction_items.price', 'transaction_items.qty', 'users.nis', 'users.full_name', 'users.class')
+        ->join('transaction_items', 'transaction_items.transaction_id', '=', 'transactions.transaction_id')
+        ->join('users', 'users.user_id', '=', 'transactions.user_id')
+        ->whereYear('transactions.transaction_date', $year)
+        ->whereMonth('transactions.transaction_date', $month)        
+        ->orderBy('transactions.transaction_id', 'DESC')
+        ->paginate($limit);
+
+        return $result;
+    }
    
 }

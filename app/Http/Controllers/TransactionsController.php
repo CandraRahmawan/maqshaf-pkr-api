@@ -9,12 +9,13 @@ use App\Models\Deposit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Response;
-// use Maatwebsite\Excel\Facades\Excel;
 use DateTime;
-use Exceles;
-// use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Facades\Excel;
 
-use App\Exports\Invoice;
+use App\Exports\Invoice_debet;
+use App\Exports\Invoice_kreadit;
+use App\Exports\Invoice_items;
+
 
 class TransactionsController extends Controller
 {
@@ -161,31 +162,17 @@ class TransactionsController extends Controller
         $year = $request->input('year');
         $month = $request->input('month');
         $uuid = $this->generateTransactionCode();
-        $nameFile = "ExportData_".$uuid;
+        $nameFile = "ExportData_Debet_".$uuid;
 
-        $totalSantri = User::findAll();
-        $totalDeposit = DepositTransaction::getAllKredit(1, $year, $month);
-        $totalTransaksi = DepositTransaction::getAllDebit(1, $year, $month);
+        
 
-        $data = array(
-            "totalSantriActive" => $totalSantri->total(),
-            "totalDeposit" => $totalDeposit->total(),
-            "totalTransaksi" => $totalTransaksi->total(),
-            "bulan" => $month,
-            "tahun" => $year
-        );
-        // return $nameFile.'.xlsx';
-        // return new Invoice;
-        // Excel::create(new Invoice, $nameFile.'.xlsx');
-        return Exceles::download(new Invoice, $nameFile.'.xlsx');
-        // return $data;
+        
 
-        // Excel::create($nameFile, function($excel) use($data){
-        //     $excel->sheet($data,  function($sheet) use($data){
-        //         $sheet->setColumnFormat(array('C' => '0'));
-        //         $sheet->loadView('invoices', $data);
-        //     });
-        // })->download('xlsx');
+        Excel::download(new Invoice_debet($year, $month), $nameFile.".xlsx");
+
+        
+        return $nameFile;
+
     }
 
     public function generateTransactionCode()
@@ -202,4 +189,34 @@ class TransactionsController extends Controller
 
         return $replaceFour;
     }
+
+    public function kreditPrint(Request $request){
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $uuid = $this->generateTransactionCode();
+        $nameFile = "ExportData_Kredit_".$uuid."_.xlsx";        
+
+        // Excel::download(new Invoice_kreadit($year, $month), $nameFile.".xlsx");
+        Excel::download(new Invoice_kreadit($year, $month), $nameFile);
+
+        
+        return DepositTransaction::printAllKreditFindByTrxCOde($year, $month);
+
+    }
+
+    public function mastergoodsItemSoldOutPrint(Request $request){
+        $year = $request->input('year');
+        $month = $request->input('month');
+        $uuid = $this->generateTransactionCode();
+        $nameFile = "ExportData_mastergoods_".$uuid."_.xlsx";        
+
+        // Excel::download(new Invoice_kreadit($year, $month), $nameFile.".xlsx");
+        Excel::download(new Invoice_items($year, $month), $nameFile);
+
+        
+        return Transactions::printAllMastergodsSoldOut($year, $month);
+
+    }
+
+    
 }
