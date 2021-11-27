@@ -58,6 +58,7 @@ $router->group(['prefix' => null, 'middleware' => 'auth'], function() use ($rout
 	// $router->get('transactions/print', [ 'uses' =>'TransactionsController@print']);
 
 	
+	$router->get('print/invoice', 'TransactionsController@print');
 	$router->get('print/kredit', 'TransactionsController@kreditPrint');
 	$router->get('print/mastergoods-sold-out', 'TransactionsController@mastergoodsItemSoldOutPrint');
 
@@ -97,4 +98,3 @@ $router->get('transactions/{id}', 'TransactionsController@findById');
 
 
 
-$router->get('print/invoice', 'TransactionsController@print');
