@@ -21,14 +21,19 @@ class CorsMiddleware {
             'Access-Control-Allow-Headers' => '*'
         ];
 
+
+
         if ($request->isMethod('OPTIONS')) {
             return response()->json('{"method":"OPTIONS"}', 200, $headers);
         }
 
         $response = $next($request);
-        foreach ($headers as $key => $value) {
-            $response->header($key, $value);
+        if ($response->headers->get('Content-Disposition') == '') {
+            foreach ($headers as $key => $value) {
+                $response->header($key, $value);
+            }
         }
+        
 
         return $response;
     }
