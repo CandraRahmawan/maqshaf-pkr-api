@@ -163,17 +163,9 @@ class TransactionsController extends Controller
         $year = $request->input('year');
         $month = $request->input('month');
         $uuid = $this->generateTransactionCode();
-        $nameFile = "ExportData_Debet_".date_timestamp_get(new DateTime());
+        $nameFile = "ExportData_Debet_".date_timestamp_get(new DateTime());        
 
-        
-
-        
-        
-
-        return Excel::download(new Invoice_debet($year, $month), $nameFile.".xlsx");
-
-        
-        return $nameFile;
+        return Excel::download(new Invoice_debet($year, $month), $nameFile.".xlsx");        
 
     }
 
@@ -196,13 +188,13 @@ class TransactionsController extends Controller
         $year = $request->input('year');
         $month = $request->input('month');
         $uuid = $this->generateTransactionCode();
-        $nameFile = "ExportData_Kredit_".$uuid."_.xlsx";        
-
-        // Excel::download(new Invoice_kreadit($year, $month), $nameFile.".xlsx");
-        Excel::download(new Invoice_kreadit($year, $month), $nameFile);
+        $nameFile = "ExportData_Kredit_".date_timestamp_get(new DateTime())."_.xlsx";        
 
         
-        return DepositTransaction::printAllKreditFindByTrxCOde($year, $month);
+       return Excel::download(new Invoice_kreadit($year, $month), $nameFile);
+
+        
+        
 
     }
 
@@ -210,13 +202,10 @@ class TransactionsController extends Controller
         $year = $request->input('year');
         $month = $request->input('month');
         $uuid = $this->generateTransactionCode();
-        $nameFile = "ExportData_mastergoods_".$uuid."_.xlsx";        
-
-        // Excel::download(new Invoice_kreadit($year, $month), $nameFile.".xlsx");
-        Excel::download(new Invoice_items($year, $month), $nameFile);
+        $nameFile = "ExportData_mastergoods_".date_timestamp_get(new DateTime())."_.xlsx";        
 
         
-        return Transactions::printAllMastergodsSoldOut($year, $month);
+        return Excel::download(new Invoice_items($year, $month), $nameFile);        
 
     }
 
