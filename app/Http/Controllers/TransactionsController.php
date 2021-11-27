@@ -16,6 +16,7 @@ use App\Exports\Invoice_debet;
 use App\Exports\Invoice_kreadit;
 use App\Exports\Invoice_items;
 
+use Illuminate\Http\Response as ResponseObject;
 
 class TransactionsController extends Controller
 {
@@ -162,13 +163,14 @@ class TransactionsController extends Controller
         $year = $request->input('year');
         $month = $request->input('month');
         $uuid = $this->generateTransactionCode();
-        $nameFile = "ExportData_Debet_".$uuid;
+        $nameFile = "ExportData_Debet_".date_timestamp_get(new DateTime());
 
         
 
         
+        
 
-        Excel::download(new Invoice_debet($year, $month), $nameFile.".xlsx");
+        return Excel::download(new Invoice_debet($year, $month), $nameFile.".xlsx");
 
         
         return $nameFile;
